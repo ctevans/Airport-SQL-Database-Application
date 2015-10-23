@@ -1,3 +1,5 @@
+
+
 def loginMenu():
     #INITIAL SCREEN FOR SCREENING NEW OR OLD USERS.
     loginMenu = True
@@ -6,6 +8,7 @@ def loginMenu():
     loginOptions = {}
     loginOptions['1'] = "Already Registered"
     loginOptions['2'] = "Not Already Registered"
+    loginOptions['3'] = "Log Out!"
     
     while loginMenu == True:
     
@@ -21,6 +24,10 @@ def loginMenu():
         if loginMenuSelection == '2':
             print("GO TO NEW REGISTRATION PAGE!")
             newUser = True
+            
+        if loginMenuSelection == '3':
+            logOutConfirm = logoutFunction()
+            return (logOutConfirm)
             
             #THIS IS GOING TO BE THE NEW USER SCREEN!
         if newUser == True:
@@ -91,26 +98,30 @@ def mainMenu():
 
 
 #All of the functions called upon by the main menu. (All 7 options!) 
+#Option 1
 def searchForFlights():
     print("SEARCH FOR FLIGHTS OPTION BEGIN")
     
+#Option 2 function
 def listExitingBookings():
     print("LIST EXITING BOOKINGS")  
     
+#Option 3 function
 def cancelABooking():
     print("CANCEL A BOOKING") 
     
+#Option 4 function
 def makeBookingOption():
     print("MAKE A BOOKING OPTION")
     
-
+#Option 5 function
 def logoutFunction():
     print("LOG OUT")
     print("Saved time of logoff!")
     return (True)    
     
     
-    
+#Option 6 function
 def recordFlightArrival(isAirlineAgent):
     #Block non-airline agents from accessing this.
     if isAirlineAgent == False:
@@ -120,6 +131,7 @@ def recordFlightArrival(isAirlineAgent):
     #Now if they are actually a airline agent they proceed....
     print("RECORD FLIGHT ARRIVAL")        
     
+#Option 7 function
 def recordFlightDeparture(isAirlineAgent):
     #Block non-airline agents from accessing this.
     if isAirlineAgent == False:
@@ -132,6 +144,7 @@ def recordFlightDeparture(isAirlineAgent):
 
 #Main method is located HERE!
 def main():
+
     exitCommand = False
     loginMenu()
     
