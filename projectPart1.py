@@ -2,7 +2,6 @@ import sys
 import cx_Oracle # the package used for accessing Oracle in Python
 import getpass # the package for getting password from user without displaying it
 
-
 def loginMenu():
     #INITIAL SCREEN FOR SCREENING NEW OR OLD USERS.
     loginMenu = True
@@ -11,7 +10,6 @@ def loginMenu():
     loginOptions = {}
     loginOptions['1'] = "Already Registered"
     loginOptions['2'] = "Not Already Registered"
-    loginOptions['3'] = "Log Out!"
     
     while loginMenu == True:
     
@@ -27,10 +25,6 @@ def loginMenu():
         if loginMenuSelection == '2':
             print("GO TO NEW REGISTRATION PAGE!")
             newUser = True
-            
-        if loginMenuSelection == '3':
-            logOutConfirm = logoutFunction()
-            return (logOutConfirm)
             
             #THIS IS GOING TO BE THE NEW USER SCREEN!
         if newUser == True:
@@ -51,9 +45,10 @@ def loginMenu():
         
     print("K so we broke out of that shit")
 
-def mainMenu():
+def mainMenu(connection):
     #Now we have that main menu of a trillion various options as requested.
     #Initialize all the things.
+
     mainMenu = True
     mainMenuOptions = {} #empty dict
     isAirlineAgent = False #THIS CAN BE TRUE OPENING MORE OPTIONS!
@@ -73,18 +68,18 @@ def mainMenu():
         
         mainMenuSelection = input("Tell me which option you want: ")
         if mainMenuSelection == '1':
-            searchForFlights()
+            searchForFlights(connection)
     
             
         if mainMenuSelection == '2':
-            makeBookingOption()
+            makeBookingOption(user,pw)
     
         if mainMenuSelection == '3':
-            listExitingBookings()
+            listExitingBookings(user,pw)
     
             
         if mainMenuSelection == '4':
-            cancelABooking()
+            cancelABooking(user,pw)
     
             
         if mainMenuSelection == '5':
@@ -101,30 +96,45 @@ def mainMenu():
 
 
 #All of the functions called upon by the main menu. (All 7 options!) 
-#Option 1
-def searchForFlights():
+def searchForFlights(connection):
+    # prompt user for source, destination and departure date
+    curs = connection.cursor()
     print("SEARCH FOR FLIGHTS OPTION BEGIN")
-    
-#Option 2 function
+    input_source = input("Enter source: ")
+    input_destination = input("Enter destination: ")
+    flight_departure = input("Enter departure date: ")
+    #sql statements for case insensitivity
+    curs.execute("alter session set NLS_COMP=LINGUISTIC")
+    curs.execute("alter session set NLS_SORT=BINARY_CI")
+
+    #searching for airports if the user didn't give a 3 letter airport code
+    if len(input_source) > 3 :
+        curs.execute("SELECT * from AIRPORTS where city ="+"'"+input_source+"'" + " or name LIKE '%"+input_source+"%'" )
+        # executing a query
+        # get all data and print it
+        rows = curs.fetchall()
+        for row in rows:
+            print(row)
+
+    curs.close()
+
 def listExitingBookings():
     print("LIST EXITING BOOKINGS")  
     
-#Option 3 function
 def cancelABooking():
     print("CANCEL A BOOKING") 
     
-#Option 4 function
 def makeBookingOption():
     print("MAKE A BOOKING OPTION")
     
-#Option 5 function
+
 def logoutFunction():
     print("LOG OUT")
     print("Saved time of logoff!")
     return (True)    
     
     
-#Option 6 function
+    
 def recordFlightArrival(isAirlineAgent):
     #Block non-airline agents from accessing this.
     if isAirlineAgent == False:
@@ -134,7 +144,6 @@ def recordFlightArrival(isAirlineAgent):
     #Now if they are actually a airline agent they proceed....
     print("RECORD FLIGHT ARRIVAL")        
     
-#Option 7 function
 def recordFlightDeparture(isAirlineAgent):
     #Block non-airline agents from accessing this.
     if isAirlineAgent == False:
@@ -149,13 +158,37 @@ def recordFlightDeparture(isAirlineAgent):
 def main():
 
     exitCommand = False
-    loginMenu()
+
+    #takes and stores sql info from user
+    # get username
+    user = input("Username [%s]: " % getpass.getuser())
+    if not user:
+            user=getpass.getuser()
     
-    #Allow constant repetition of the main menu for the user.
-    while exitCommand != True:
-        exitCommand = mainMenu()
+    # get password
+    pw = getpass.getpass()
+    conString=''+user+'/' + pw +'@gwynne.cs.ualberta.ca:1521/CRS'
+
+    try:
+        # Establish a connection in Python
+        connection = cx_Oracle.connect(conString)
+        #user login stuff here
+        loginMenu()
+        #Allow constant repetition of the main menu for the user.
+        while exitCommand != True:
+            exitCommand = mainMenu(connection)
+        connection.close()
+
+    #if sql id or pw is incorrect it breaks
+    except cx_Oracle.DatabaseError as exc:
+        error, = exc.args
+        print( sys.stderr, "Oracle code:", error.code)
+        print( sys.stderr, "Oracle message:", error.message)
+
+
+
         
-        
+
 if __name__ == "__main__":
     main()
     
