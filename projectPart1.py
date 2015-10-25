@@ -86,14 +86,14 @@ def mainMenu(connection):
     
             
         if mainMenuSelection == '2':
-            makeBookingOption(user,pw)
+            makeBookingOption(connection)
     
         if mainMenuSelection == '3':
-            listExitingBookings(user,pw)
+            listExitingBookings()
     
             
         if mainMenuSelection == '4':
-            cancelABooking(user,pw)
+            cancelABooking()
     
             
         if mainMenuSelection == '5':
@@ -238,4 +238,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
