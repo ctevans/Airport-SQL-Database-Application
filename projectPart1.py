@@ -100,21 +100,44 @@ def searchForFlights(connection):
     # prompt user for source, destination and departure date
     curs = connection.cursor()
     print("SEARCH FOR FLIGHTS OPTION BEGIN")
-    input_source = input("Enter source: ")
-    input_destination = input("Enter destination: ")
-    flight_departure = input("Enter departure date: ")
+    
     #sql statements for case insensitivity
     curs.execute("alter session set NLS_COMP=LINGUISTIC")
     curs.execute("alter session set NLS_SORT=BINARY_CI")
 
     #searching for airports if the user didn't give a 3 letter airport code
+    input_source = input("Enter source: ")
     if len(input_source) > 3 :
         curs.execute("SELECT * from AIRPORTS where city ="+"'"+input_source+"'" + " or name LIKE '%"+input_source+"%'" )
         # executing a query
         # get all data and print it
         rows = curs.fetchall()
         for row in rows:
-            print(row)
+            print(row[0],row[1],row[2],row[3],row[4])
+        flight_source = input("Please select and enter the three letter airport code of your source airport: ")
+
+    else :
+        flight_source = input_source
+
+    #searching for destination airports
+    input_destination = input("Enter destination: ")
+    if len(input_destination) > 3 :
+        curs.execute("SELECT * from AIRPORTS where city ="+"'"+input_destination+"'" + " OR name LIKE '%"+input_destination+"%'" )
+        # executing a query
+        # get all data and print it
+        rows = curs.fetchall()
+        for row in rows:
+            print(row[0],row[1],row[2],row[3],row[4])
+        flight_destination = input("Please select and enter the three letter airport code of your destination airport: ")
+    else:
+        flight_destination = input_destination
+
+    #only taking departure date in this format
+    flight_departure = input("Enter departure date in DD-Mon-YY format: ")
+    curs.execute("SELECT sf.* from sch_flights sf, flights f where sf.dep_date = " + "'"+flight_departure+"'" +" AND sf.flightno = f.flightno AND f.src ="+"'"+flight_source+"'"+" AND f.dst ="+"'"+flight_destination+"'")
+    rows = curs.fetchall()
+    for row in rows:
+        print(row[0],row[1].strftime('%d-%b-%Y'),row[2].strftime('%d-%b-%Y'),row[3].strftime('%d-%b-%Y'))
 
     curs.close()
 
@@ -191,5 +214,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
-    
