@@ -2,6 +2,19 @@ import sys
 import cx_Oracle # the package used for accessing Oracle in Python
 import getpass # the package for getting password from user without displaying it
 
+
+def create_available_view(connection):
+
+    #crazy shit creating the available flights view table if it does not exist, if it already exist, drop it then create.
+    curs = connection.cursor()
+    curs.execute("SELECT view_name from user_views")
+    rows = curs.fetchall()
+    for row in rows:
+        if row[0] == "AVAILABLE_FLIGHTS" :
+            curs.execute("DROP view available_flights")
+    curs.execute("create view available_flights(flightno,dep_date, src,dst,dep_time,arr_time,fare,seats,price) as select f.flightno, sf.dep_date, f.src, f.dst, f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time)), f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time))+(f.est_dur/60+a2.tzone-a1.tzone)/24, fa.fare, fa.limit-count(tno), fa.price from flights f, flight_fares fa, sch_flights sf, bookings b, airports a1, airports a2 where f.flightno=sf.flightno and f.flightno=fa.flightno and f.src=a1.acode and f.dst=a2.acode and fa.flightno=b.flightno(+) and fa.fare=b.fare(+) and sf.dep_date=b.dep_date(+) group by f.flightno, sf.dep_date, f.src, f.dst, f.dep_time, f.est_dur,a2.tzone, a1.tzone, fa.fare, fa.limit, fa.price having fa.limit-count(tno) > 0 ")
+    curs.close()
+
 def loginMenu():
     #INITIAL SCREEN FOR SCREENING NEW OR OLD USERS.
     loginMenu = True
@@ -104,7 +117,6 @@ def searchForFlights(connection):
     #sql statements for case insensitivity
     curs.execute("alter session set NLS_COMP=LINGUISTIC")
     curs.execute("alter session set NLS_SORT=BINARY_CI")
-
     #searching for airports if the user didn't give a 3 letter airport code
     input_source = input("Enter source: ")
     if len(input_source) > 3 :
@@ -195,6 +207,9 @@ def main():
     try:
         # Establish a connection in Python
         connection = cx_Oracle.connect(conString)
+
+        #creates the view table of available flights upon connection
+        create_available_view(connection)
         #user login stuff here
         loginMenu()
         #Allow constant repetition of the main menu for the user.
@@ -214,3 +229,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
