@@ -10,6 +10,7 @@ def create_available_view(connection):
     curs.execute("SELECT view_name from user_views")
     rows = curs.fetchall()
     for row in rows:
+        print(row[0])
         if row[0] == "AVAILABLE_FLIGHTS" :
             curs.execute("DROP view available_flights")
     curs.execute("create view available_flights(flightno,dep_date, src,dst,dep_time,arr_time,fare,seats,price) as select f.flightno, sf.dep_date, f.src, f.dst, f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time)), f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time))+(f.est_dur/60+a2.tzone-a1.tzone)/24, fa.fare, fa.limit-count(tno), fa.price from flights f, flight_fares fa, sch_flights sf, bookings b, airports a1, airports a2 where f.flightno=sf.flightno and f.flightno=fa.flightno and f.src=a1.acode and f.dst=a2.acode and fa.flightno=b.flightno(+) and fa.fare=b.fare(+) and sf.dep_date=b.dep_date(+) group by f.flightno, sf.dep_date, f.src, f.dst, f.dep_time, f.est_dur,a2.tzone, a1.tzone, fa.fare, fa.limit, fa.price having fa.limit-count(tno) > 0 ")
@@ -119,37 +120,45 @@ def searchForFlights(connection):
     curs.execute("alter session set NLS_SORT=BINARY_CI")
     #searching for airports if the user didn't give a 3 letter airport code
     input_source = input("Enter source: ")
+    print("\n")
     if len(input_source) > 3 :
         curs.execute("SELECT * from AIRPORTS where city ="+"'"+input_source+"'" + " or name LIKE '%"+input_source+"%'" )
         # executing a query
         # get all data and print it
         rows = curs.fetchall()
         for row in rows:
-            print(row[0],row[1],row[2],row[3],row[4])
+            print("|Airport Code:",row[0],"|Airport Name:",row[1],"|City:",row[2],"|Country:",row[3],"|Time Zone:",row[4])
         flight_source = input("Please select and enter the three letter airport code of your source airport: ")
+        print("\n")
 
     else :
         flight_source = input_source
 
     #searching for destination airports
     input_destination = input("Enter destination: ")
+    print("\n")
     if len(input_destination) > 3 :
         curs.execute("SELECT * from AIRPORTS where city ="+"'"+input_destination+"'" + " OR name LIKE '%"+input_destination+"%'" )
         # executing a query
         # get all data and print it
         rows = curs.fetchall()
         for row in rows:
-            print(row[0],row[1],row[2],row[3],row[4])
+            print("|Airport Code:",row[0],"|Airport Name",row[1],"|City:",row[2],"|Country",row[3],"|Time Zone:",row[4])
         flight_destination = input("Please select and enter the three letter airport code of your destination airport: ")
+        print("\n")
+
     else:
         flight_destination = input_destination
 
     #only taking departure date in this format
     flight_departure = input("Enter departure date in DD-Mon-YY format: ")
-    curs.execute("SELECT sf.* from sch_flights sf, flights f where sf.dep_date = " + "'"+flight_departure+"'" +" AND sf.flightno = f.flightno AND f.src ="+"'"+flight_source+"'"+" AND f.dst ="+"'"+flight_destination+"'")
+    print("\n")
+
+    #direct flight results
+    curs.execute("SELECT flightno, src, dst, dep_date, seats, price FROM AVAILABLE_FLIGHTS WHERE src =" + "'" +flight_source+ "'" + " AND dst =" + "'" +flight_destination+ "'" + " and dep_date =" + "'" +flight_departure+ "'" + " and seats > 1 ORDER BY price")
     rows = curs.fetchall()
     for row in rows:
-        print(row[0],row[1].strftime('%d-%b-%Y'),row[2].strftime('%d-%b-%Y'),row[3].strftime('%d-%b-%Y'))
+        print("|Flight Number:",row[0],"|Source Airport:",row[1],"|Destination Airport:",row[2],"|Departure Date:",row[3].strftime('%d-%b-%Y'), "|Seats Available:",row[4],"|Seat Price",row[5])
 
     curs.close()
 
