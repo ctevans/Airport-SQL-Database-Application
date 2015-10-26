@@ -102,7 +102,12 @@ def loginMenu(connection):
                 return(True, userEmail, userPassword) 
 		
 
-        
+        #USER LOGIN (OLD / ALREADY EXISTING USER!!!!) SCREEN
+        #Obtain username(email) and password from the user.
+        #formulate into a string and then funnel string into Oracle
+        #check that we HAVE this username and password combination
+        #IFFFF we do have the combo then we will return to the main bulk of the
+        #program with the given username, password and proceed with the program.
         if oldUser == True:
             print("You stated you were in the database. Please give your info:")
             oldUserName = input("Give me your Email!: ")
