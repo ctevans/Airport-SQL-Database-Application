@@ -55,7 +55,7 @@ def loginMenu(connection):
             print("GO TO NEW REGISTRATION PAGE!")
             newUser = True #This user is requesting as a new user!
         if loginMenuSelection == '3':
-             return(False, userEmail, userPassword) #EXIT with placeholders
+             return(False, userEmail, userPassword, False) #EXIT with placeholders
       
         #USER REGISTRATION SCREEN.
         #This is the dumping zone for all functionalities needed to allow
@@ -105,7 +105,7 @@ def loginMenu(connection):
                 print("Name and password accepted and put into database!")
                 print("Putting you into the application itself...")
                 loginMenu = False
-                return(True, userEmail, userPassword) 
+                return(True, userEmail, userPassword, False) 
 		
 
         #USER LOGIN (OLD / ALREADY EXISTING USER!!!!) SCREEN
@@ -133,9 +133,24 @@ def loginMenu(connection):
                     print("We have you in the database! Login confirmed!")
                     userEmail = oldUserName
                     userPassword = oldUserPass
-                    return(True, userEmail, userPassword)
+                    #Now I want to see if the user is an airline agent or not!!!
+                    sqlAirlineAgentString = ("Select count(*) from "
+			"airline_agents where email = " + "'" + userEmail
+                        + "'") 
+                    curs.execute (sqlAirlineAgentString)
+                    rows = curs.fetchall()
+                    for row in rows:
+                        if row[0] == 0:
+                            airLineAgent = False
+                            print("GAAHHHH!!!!!!!!")
+                            return(True, userEmail, userPassword, airLineAgent)
+                        if row[0] > 0: 
+                            airLineAgent = True
+                            print("FUCK!!!!!!!!!!!!!!!")
+                            return(True, userEmail, userPassword, airLineAgent)
+            
 
-def mainMenu(connection, userEmail, userPassword):
+def mainMenu(connection, userEmail, userPassword, airLineAgent):
     #Now we have that main menu of a trillion various options as requested.
     #Initialize all the things. 7 different options.
     mainMenu = True
@@ -179,11 +194,11 @@ def mainMenu(connection, userEmail, userPassword):
             return logoutConfirm
             
         if mainMenuSelection == '6':
-            recordFlightDeparture(isAirlineAgent)
+            recordFlightDeparture(airLineAgent, connection)
 
         
         if mainMenuSelection == '7':
-            recordFlightArrival(isAirlineAgent)
+            recordFlightArrival(airLineAgent, connection)
     
 
 
@@ -336,9 +351,9 @@ def logoutFunction(connection, userEmail, userPassword):
     
     
 #The arrival time of a flight may be modified from this function.
-def recordFlightArrival(isAirlineAgent):
+def recordFlightArrival(airLineAgent, connection):
     #Block non-airline agents from accessing this.
-    if isAirlineAgent == False:
+    if airLineAgent == False:
         print("Only airline agents may use this function!") 
         return
 
@@ -346,14 +361,37 @@ def recordFlightArrival(isAirlineAgent):
     print("RECORD FLIGHT ARRIVAL")        
   
 #The departure time of a flight may be modified from this function.  
-def recordFlightDeparture(isAirlineAgent):
+def recordFlightDeparture(airLineAgent, connection):
     #Block non-airline agents from accessing this.
-    if isAirlineAgent == False:
+    if airLineAgent == False:
         print("Only airline agents may use this function!")
         return
     
     #Now if they are actually a airline agent they proceed....
-    print("RECORD FLIGHT DEPARTURE")  
+    print("RECORD FLIGHT DEPARTURE") 
+    print("Please enter the flightnumber you want the value changed!")
+    print("EXAMPLE: AC154")
+    flightDepartureInputFNo = input("Enter flightnumber here: ") 
+    print("Please enter the EXPECTED departure date (NOT the actual one!)!")
+    print("EXAMPLE: 01-OCT-15")
+    flightDepartureInputDep = input("Enter expected departure date here: ")
+    print("Please enter the ACTUAL DEPARTURE TIME HERE!")
+    print("Format (FOLLOIW IT PLEASE!!!!!!!!)")
+    print("yyyy/mm/dd hh24:mi:ss where y = year, m = month, d = day h = hour")
+    print(" mi = minutes and s = seconds") 
+    fullTimeStringDeparture = input("Please enter here FORMAT PLEASE!")
+
+    curs = connection.cursor()
+    #Save to the database the new time, as in when they logged out.
+    curs.execute("UPDATE sch_flights set act_dep_time = " + "'" + 
+        fullTimeStringDeparture + "'" + 
+        " where flightno = " + "'" + flightDepartureInputFNo + "'" +
+        " and dep_date = " +"'" + flightDepartureInputDep + "'")   
+    print("Edited value for DEPARTURE put into database! Thank you! :)")
+ 
+
+    
+
         
 
 #Main method is located HERE!
@@ -385,13 +423,15 @@ def main():
         #creates the view table of available flights upon connection
         create_available_view(connection)
         #user login stuff here
-        loginSuccess, userEmail, userPassword = loginMenu(connection)
+        (loginSuccess, userEmail, userPassword, 
+            airLineAgent) = loginMenu(connection)
         if loginSuccess == False:
             exitCommand = True
             print("Application closed, no successful login attempt.")
         #Allow constant repetition of the main menu for the user.
         while exitCommand != True:
-            exitCommand = mainMenu(connection, userEmail, userPassword)
+            exitCommand = mainMenu(connection, userEmail, userPassword, 
+                airLineAgent)
         connection.close() #We are finished, now end connection.
 
     #This is an elegant way of handling the errors where we are informed
