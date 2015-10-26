@@ -3,6 +3,7 @@ import cx_Oracle # the package used for accessing Oracle in Python
 import getpass # the package for getting password from user without displaying it
 
 
+
 def create_available_view(connection):
 
     #crazy shit creating the available flights view table if it does not exist, if it already exist, drop it then create.
