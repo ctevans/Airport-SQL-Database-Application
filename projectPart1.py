@@ -120,7 +120,6 @@ def searchForFlights(connection):
     curs.execute("alter session set NLS_SORT=BINARY_CI")
     #searching for airports if the user didn't give a 3 letter airport code
     input_source = input("Enter source: ")
-    print("\n")
     if len(input_source) > 3 :
         curs.execute("SELECT * from AIRPORTS where city ="+"'"+input_source+"'" + " or name LIKE '%"+input_source+"%'" )
         # executing a query
@@ -128,7 +127,7 @@ def searchForFlights(connection):
         rows = curs.fetchall()
         for row in rows:
             print("|Airport Code:",row[0],"|Airport Name:",row[1],"|City:",row[2],"|Country:",row[3],"|Time Zone:",row[4])
-        flight_source = input("Please select and enter the three letter airport code of your source airport: ")
+        flight_source = input("\nPlease select and enter the three letter airport code of your source airport: ")
         print("\n")
 
     else :
@@ -136,7 +135,6 @@ def searchForFlights(connection):
 
     #searching for destination airports
     input_destination = input("Enter destination: ")
-    print("\n")
     if len(input_destination) > 3 :
         curs.execute("SELECT * from AIRPORTS where city ="+"'"+input_destination+"'" + " OR name LIKE '%"+input_destination+"%'" )
         # executing a query
@@ -144,7 +142,7 @@ def searchForFlights(connection):
         rows = curs.fetchall()
         for row in rows:
             print("|Airport Code:",row[0],"|Airport Name",row[1],"|City:",row[2],"|Country",row[3],"|Time Zone:",row[4])
-        flight_destination = input("Please select and enter the three letter airport code of your destination airport: ")
+        flight_destination = input("\nPlease select and enter the three letter airport code of your destination airport: ")
         print("\n")
 
     else:
@@ -170,11 +168,13 @@ def cancelABooking():
     
 def makeBookingOption(connection):
     curs = connection.cursor()
+    cursInsert = connection.cursor()
     print("MAKE A BOOKING OPTION")
     user_email = input("Please enter your email: ")
     user_email = "'"+user_email+"'"
     curs.execute("SELECT * from passengers where email ="+user_email)
     rows = curs.fetchall()
+
     if rows:
         pass
     else:
@@ -184,17 +184,15 @@ def makeBookingOption(connection):
         user_name = "'"+user_name+"'"
         user_country = input("Please enter your country:")
         user_country = "'"+user_country+"'"
-        #-----line------
 
-                #('Almond roca', 102, 8.99, 0, 0),
-                #('Golden Key', 103, 3.99, 0, 0)]
-        cursInsert = connection.cursor()
-        #cursInsert.bindarraysize = 1
         cursInsert.execute("INSERT INTO PASSENGERS values "+"("+user_email+","+user_name+","+user_country+")");
         connection.commit()
-        #------end-------
-    print("After if and else debug point")
-
+    cursInsert.close()
+    print("Please enter the flight number of your booking, fare type, departure date and the seat number")
+    user_flightno = input("Enter flight number:")
+    user_fare = input("Enter fare type:")
+    user_departure = input("Enter departure date:")
+    user_seat = input("Enter the seat number:")
 
 
 
