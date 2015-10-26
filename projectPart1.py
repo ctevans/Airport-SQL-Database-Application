@@ -137,8 +137,7 @@ def loginMenu(connection):
 
 def mainMenu(connection, userEmail, userPassword):
     #Now we have that main menu of a trillion various options as requested.
-    #Initialize all the things.
-
+    #Initialize all the things. 7 different options.
     mainMenu = True
     mainMenuOptions = {} #empty dict
     isAirlineAgent = False #THIS CAN BE TRUE OPENING MORE OPTIONS!
@@ -149,6 +148,8 @@ def mainMenu(connection, userEmail, userPassword):
     mainMenuOptions['5'] = "Logout."
     mainMenuOptions['6'] = "AIRLINE AGENTS ONLY: Record a flight departure."
     mainMenuOptions['7'] = "AIRLINE AGENTS ONLY: Record a flight arrival."
+    #Initialize the mainMenu where the user will be looping through until
+    #We have a series of menu options to choose from.
     while mainMenu == True:
         print("\n")
         print("Welcome to the main screen. We have various options here to" +
@@ -255,6 +256,8 @@ def listExitingBookings():
 def cancelABooking():
     print("CANCEL A BOOKING") 
     
+#This function is going to be dealing with the functionality of making a booking
+#option. This function will 
 def makeBookingOption(connection):
     curs = connection.cursor()
     cursInsert = connection.cursor()
@@ -311,8 +314,10 @@ def makeBookingOption(connection):
     check.close()
     curs.close()
 
+#This function is dealing exclusively with handling the logout of the user.
 def logoutFunction(connection, userEmail, userPassword):
     curs = connection.cursor()
+    #Save to the database the new time, as in when they logged out.
     curs.execute("UPDATE users set last_login = SYSDATE where email = " + "'" + 
         userEmail + "'" + " and pass = " + "'" + userPassword + "'" )
     connection.commit()
@@ -321,7 +326,7 @@ def logoutFunction(connection, userEmail, userPassword):
     return (True)    
     
     
-    
+#The arrival time of a flight may be modified from this function.
 def recordFlightArrival(isAirlineAgent):
     #Block non-airline agents from accessing this.
     if isAirlineAgent == False:
@@ -330,7 +335,8 @@ def recordFlightArrival(isAirlineAgent):
 
     #Now if they are actually a airline agent they proceed....
     print("RECORD FLIGHT ARRIVAL")        
-    
+  
+#The departure time of a flight may be modified from this function.  
 def recordFlightDeparture(isAirlineAgent):
     #Block non-airline agents from accessing this.
     if isAirlineAgent == False:
