@@ -43,7 +43,7 @@ def loginMenu():
             #THIS IS GOING TO BE THE NEW USER SCREEN!
         if newUser == True:
             print("YOU ARE A PEASANT. REGISTER.")
-            newUserName = input("Give me your username!: ")
+            newUserName = input("Give me your Email!: ")
             newUserPass = input("Give me your password!: ")
             print("CONGRATS ON JOINING THE FUN!")
             loginMenu = False
@@ -51,7 +51,7 @@ def loginMenu():
         
         if oldUser == True:
             print("Okay we've got you, now give me your username!")
-            oldUserName = input("Give me your username!: ")
+            oldUserName = input("Give me your Email!: ")
             oldUserPass = input("Give me your password!: ")
             print("Welcome back!")
             loginMenu = False     
@@ -168,9 +168,37 @@ def listExitingBookings():
 def cancelABooking():
     print("CANCEL A BOOKING") 
     
-def makeBookingOption():
+def makeBookingOption(connection):
+    curs = connection.cursor()
     print("MAKE A BOOKING OPTION")
-    
+    user_email = input("Please enter your email: ")
+    user_email = "'"+user_email+"'"
+    curs.execute("SELECT * from passengers where email ="+user_email)
+    rows = curs.fetchall()
+    if rows:
+        pass
+    else:
+        print("\nThe Email address you've entered was not part of our database")
+        print("Please give us your name and your country")
+        user_name = input("Please enter your name:")
+        user_name = "'"+user_name+"'"
+        user_country = input("Please enter your country:")
+        user_country = "'"+user_country+"'"
+        #-----line------
+
+                #('Almond roca', 102, 8.99, 0, 0),
+                #('Golden Key', 103, 3.99, 0, 0)]
+        cursInsert = connection.cursor()
+        #cursInsert.bindarraysize = 1
+        cursInsert.execute("INSERT INTO PASSENGERS values "+"("+user_email+","+user_name+","+user_country+")");
+        connection.commit()
+        #------end-------
+    print("After if and else debug point")
+
+
+
+
+    curs.close()
 
 def logoutFunction():
     print("LOG OUT")
