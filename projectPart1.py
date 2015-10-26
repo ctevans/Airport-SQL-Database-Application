@@ -251,7 +251,16 @@ def searchForFlights(connection):
     curs.close()
 
 def listExitingBookings():
-    print("LIST EXITING BOOKINGS")  
+    print("LIST EXISTING BOOKINGS")
+    curs = connection.cursor()
+    user_email = input("Please enter your email: ")
+    user_email = "'"+ user_email + "'"
+    #SELECT UNIQUE bookings.tno, passengers.name, bookings.dep_date, 
+    # tickets.paid_price FROM bookings, passengers, tickets
+    # WHERE bookings.tno=tickets.tno AND passengers.email=tickets.email
+    # AND passengers.name = tickets.name
+
+
     
 def cancelABooking():
     print("CANCEL A BOOKING") 
