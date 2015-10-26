@@ -57,16 +57,27 @@ def loginMenu(connection):
             newUserPass = input("Give me your password!: ")	
             sqlRegisterString = ("INSERT INTO users (email, pass, last_login) "
                 + "VALUES (" +  "'" +newUserName+"'" + ", " +"'" +newUserPass +"'" + ", SYSDATE)")
-
-            curs.execute(sqlRegisterString)
-            connection.commit()
-            userEmail = newUserName
-            userPassword = newUserPass
-
-            print("Name and password accepted and put into database!")
-            print("Putting you into the application itself...")
-            loginMenu = False
-            return(True, userEmail, userPassword)
+            #I want to make sure we have no attempted duplicate emails.
+            #So that is what this block here is!
+            sqlDoubleRegistrationString = ("Select count(*) from users where email = " 
+                + "'" + newUserName + "'" + " and pass = " + "'" + newUserPass + "'")
+            curs.execute(sqlDoubleRegistrationString)
+            rows = curs.fetchall()
+            for row in rows:
+                if row[0] == 1:
+                    print("\nERROR! We already have THAT email in the database!")
+                    print("Please try another email...? ....?????\n")
+                    doubleRegistrationError = True
+            if doubleRegistrationError != True:
+                #At this point we've determined they aren't a duplicate, move ahead
+                curs.execute(sqlRegisterString)
+                connection.commit()
+                userEmail = newUserName
+                userPassword = newUserPass
+                print("Name and password accepted and put into database!")
+                print("Putting you into the application itself...")
+                loginMenu = False
+                return(True, userEmail, userPassword)
 		
 
         
@@ -81,8 +92,8 @@ def loginMenu(connection):
             rows = curs.fetchall()
             for row in rows:
                 if row[0] == 0:
-                    print("Sorry you are not in the database. \n Maybe you made a typo?")
-                    print("Please try again! :(")
+                    print("\nSorry you are not in the database. \n Maybe you made a typo?")
+                    print("Please try again! :(\n\n")
                 if row[0] == 1:
                     print("We have you in the database! Login confirmed!")
                     userEmail = oldUserName
