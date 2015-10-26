@@ -63,6 +63,7 @@ def loginMenu(connection):
                 + "'" + newUserName + "'" + " and pass = " + "'" + newUserPass + "'")
             curs.execute(sqlDoubleRegistrationString)
             rows = curs.fetchall()
+            doubleRegistrationError = False
             for row in rows:
                 if row[0] == 1:
                     print("\nERROR! We already have THAT email in the database!")
