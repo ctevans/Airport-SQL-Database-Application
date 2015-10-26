@@ -6,7 +6,8 @@ import getpass # the package for getting password from user without displaying i
 
 def create_available_view(connection):
 
-    #crazy shit creating the available flights view table if it does not exist, if it already exist, drop it then create.
+    #crazy shit creating the available flights view table if it does not exist,
+    #if it already exist, drop it then create.
     curs = connection.cursor()
     curs.execute("SELECT view_name from user_views")
     rows = curs.fetchall()
@@ -56,21 +57,24 @@ def loginMenu(connection):
             newUserName = input("Give me your Email!: ")
             newUserPass = input("Give me your password!: ")	
             sqlRegisterString = ("INSERT INTO users (email, pass, last_login) "
-                + "VALUES (" +  "'" +newUserName+"'" + ", " +"'" +newUserPass +"'" + ", SYSDATE)")
+                + "VALUES (" +  "'" +newUserName+"'" + ", " +"'" +newUserPass +
+                "'" + ", SYSDATE)")
             #I want to make sure we have no attempted duplicate emails.
             #So that is what this block here is!
-            sqlDoubleRegistrationString = ("Select count(*) from users where email = " 
-                + "'" + newUserName + "'" + " and pass = " + "'" + newUserPass + "'")
+            sqlDoubleRegistrationString = ("Select count(*) from users where "
+                "email = " + "'" + newUserName + "'")
             curs.execute(sqlDoubleRegistrationString)
             rows = curs.fetchall()
             doubleRegistrationError = False
             for row in rows:
                 if row[0] == 1:
-                    print("\nERROR! We already have THAT email in the database!")
+                    print("\nERROR! We already have THAT email in the "
+                        "database!")
                     print("Please try another email...? ....?????\n")
                     doubleRegistrationError = True
             if doubleRegistrationError != True:
-                #At this point we've determined they aren't a duplicate, move ahead
+                #At this point we've determined they aren't a duplicate
+                #and will move ahead with registration of the user!
                 curs.execute(sqlRegisterString)
                 connection.commit()
                 userEmail = newUserName
@@ -87,13 +91,15 @@ def loginMenu(connection):
             oldUserName = input("Give me your Email!: ")
             oldUserPass = input("Give me your password!: ")
             sqlLoginString = ("Select count(*) from users where email = " 
-                + "'" + oldUserName + "'" + " and pass = " + "'" + oldUserPass + "'")
+                + "'" + oldUserName + "'" + " and pass = " + "'" + oldUserPass + 
+                "'")
             curs.execute(sqlLoginString)
             connection.commit()
             rows = curs.fetchall()
             for row in rows:
                 if row[0] == 0:
-                    print("\nSorry you are not in the database. \n Maybe you made a typo?")
+                    print("\nSorry, you entered EITHER an invalid username " 
+                        "OR invalid password. \n Maybe you made a typo?")
                     print("Please try again! :(\n\n")
                 if row[0] == 1:
                     print("We have you in the database! Login confirmed!")
@@ -164,13 +170,16 @@ def searchForFlights(connection):
     #searching for airports if the user didn't give a 3 letter airport code
     input_source = input("Enter source: ")
     if len(input_source) > 3 :
-        curs.execute("SELECT * from AIRPORTS where city ="+"'"+input_source+"'" + " or name LIKE '%"+input_source+"%'" )
+        curs.execute("SELECT * from AIRPORTS where city ="+"'"+input_source+"'" 
+            + " or name LIKE '%"+input_source+"%'" )
         # executing a query
         # get all data and print it
         rows = curs.fetchall()
         for row in rows:
-            print("|Airport Code:",row[0],"|Airport Name:",row[1],"|City:",row[2],"|Country:",row[3],"|Time Zone:",row[4])
-        flight_source = input("\nPlease select and enter the three letter airport code of your source airport: ")
+            print("|Airport Code:",row[0],"|Airport Name:",row[1],
+                "|City:",row[2],"|Country:",row[3],"|Time Zone:",row[4])
+        flight_source = input("\nPlease select and enter the three letter"
+            "airport code of your source airport: ")
         print("\n")
 
     else :
@@ -179,13 +188,16 @@ def searchForFlights(connection):
     #searching for destination airports
     input_destination = input("Enter destination: ")
     if len(input_destination) > 3 :
-        curs.execute("SELECT * from AIRPORTS where city ="+"'"+input_destination+"'" + " OR name LIKE '%"+input_destination+"%'" )
+        curs.execute("SELECT * from AIRPORTS where city ="+"'"+input_destination
+            +"'" + " OR name LIKE '%"+input_destination+"%'" )
         # executing a query
         # get all data and print it
         rows = curs.fetchall()
         for row in rows:
-            print("|Airport Code:",row[0],"|Airport Name",row[1],"|City:",row[2],"|Country",row[3],"|Time Zone:",row[4])
-        flight_destination = input("\nPlease select and enter the three letter airport code of your destination airport: ")
+            print("|Airport Code:",row[0],"|Airport Name",row[1],"|City:"
+                ,row[2],"|Country",row[3],"|Time Zone:",row[4])
+        flight_destination = input("\nPlease select and enter the three letter"
+            "airport code of your destination airport: ")
         print("\n")
 
     else:
@@ -196,10 +208,16 @@ def searchForFlights(connection):
     print("\n")
 
     #direct flight results
-    curs.execute("SELECT flightno, src, dst, dep_date, seats, price FROM AVAILABLE_FLIGHTS WHERE src =" + "'" +flight_source+ "'" + " AND dst =" + "'" +flight_destination+ "'" + " and dep_date =" + "'" +flight_departure+ "'" + " and seats > 1 ORDER BY price")
+    curs.execute("SELECT flightno, src, dst, dep_date, seats,"
+       " price FROM AVAILABLE_FLIGHTS WHERE src =" + "'" +flight_source+ "'" +
+       " AND dst =" + "'" +flight_destination+ "'" + " and dep_date =" + "'" +
+       flight_departure+ "'" + " and seats > 1 ORDER BY price")
     rows = curs.fetchall()
     for row in rows:
-        print("|Flight Number:",row[0],"|Source Airport:",row[1],"|Destination Airport:",row[2],"|Departure Date:",row[3].strftime('%d-%b-%Y'), "|Seats Available:",row[4],"|Seat Price",row[5])
+        print("|Flight Number:",row[0],"|Source Airport:",row[1],
+            "|Destination Airport:",row[2],"|Departure Date:",
+            row[3].strftime('%d-%b-%Y'), "|Seats Available:",row[4],
+            "|Seat Price",row[5])
 
     curs.close()
 
@@ -228,10 +246,12 @@ def makeBookingOption(connection):
         user_country = input("Please enter your country:")
         user_country = "'"+user_country+"'"
 
-        cursInsert.execute("INSERT INTO PASSENGERS values "+"("+user_email+","+user_name+","+user_country+")");
+        cursInsert.execute("INSERT INTO PASSENGERS values "+"("+user_email+
+            ","+user_name+","+user_country+")");
         connection.commit()
     cursInsert.close()
-    print("Please enter the flight number of your booking, fare type, departure date and the seat number")
+    print("Please enter the flight number of your booking, fare type, "
+        "departure date and the seat number")
     user_flightno = input("Enter flight number:")
     user_flightno = "'"+user_flightno+"'"
     user_fare = input("Enter fare type:")
@@ -242,14 +262,21 @@ def makeBookingOption(connection):
     user_seat = "'"+user_seat+"'"
 
     check = connection.cursor()
-    print("SELECT * from bookings where flightno = "+user_flightno+" and fare = "+user_fare+" and dep_date = "+user_departure+" and seat = "+user_seat)
-    check.execute("SELECT * from bookings where flightno = "+user_flightno+" and fare = "+user_fare+" and dep_date = "+user_departure+" and seat = "+user_seat)
+    print("SELECT * from bookings where flightno = "+user_flightno+
+        " and fare = "+user_fare+" and dep_date = "+user_departure+
+        " and seat = "+user_seat)
+    check.execute("SELECT * from bookings where flightno = "+user_flightno+
+        " and fare = "+user_fare+" and dep_date = "+user_departure+
+        " and seat = "+user_seat)
     row = check.fetchall()
     if row:
-        print("The seat",user_seat,"you are tring to book on flight",user_flightno,"is already staken")
+        print("The seat",user_seat,"you are tring to book on flight"
+            ,user_flightno,"is already staken")
     else:
         print("jere")
-        curs.execute("SELECT * from available_flights where flightno = "+user_flightno+" and fare = "+user_fare+" and dep_date = "+user_departure)
+        curs.execute("SELECT * from available_flights where flightno = "
+            +user_flightno+" and fare = "+user_fare+" and dep_date = "
+            +user_departure)
         rows = curs.fetchall()
         for i in rows:
             print(i)
