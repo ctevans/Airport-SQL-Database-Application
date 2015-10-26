@@ -63,7 +63,13 @@ def loginMenu(connection):
         if newUser == True:
             print("Please enter information to register.")
             newUserName = input("Give me your Email!: ")
-            newUserPass = input("Give me your password!: ")
+            newUserPass = getpass.getpass()
+
+
+
+
+
+
             #Place the variables into a string that will be sent through Oracle	
             sqlRegisterString = ("INSERT INTO users (email, pass, last_login) "
                 + "VALUES (" +  "'" +newUserName+"'" + ", " +"'" +newUserPass +
@@ -336,20 +342,27 @@ def recordFlightDeparture(isAirlineAgent):
         
 
 #Main method is located HERE!
+#The main method is responsible for creating all of the connections and 
+#other features of the program.
+#The main method is going to coordinate various larger functions
+#such as the login screen and the main menu, and it will weave variables
+#through them. 
+#Furthermore upon completion of the program the main function (this) will be
+#reponsible for closing all of the connections! 
 def main():
-
+    #Initialize useful boolean flag.
     exitCommand = False
 
-    #takes and stores sql info from user
-    # get username
+    #Obtain the username using a fancy method.
     user = input("Username [%s]: " % getpass.getuser())
     if not user:
             user=getpass.getuser()
-    
-    # get password
+    #Obtain the password using a fancy method.
     pw = getpass.getpass()
+    #Create a string to connect to the database! USING the user/pass.
     conString=''+user+'/' + pw +'@gwynne.cs.ualberta.ca:1521/CRS'
 
+    #Try block in order to connect to the database.
     try:
         # Establish a connection in Python
         connection = cx_Oracle.connect(conString)
@@ -363,15 +376,16 @@ def main():
             print("Application closed, no successful login attempt.")
         #Allow constant repetition of the main menu for the user.
         while exitCommand != True:
-
             exitCommand = mainMenu(connection, userEmail, userPassword)
-        connection.close()
+        connection.close() #We are finished, now end connection.
 
-    #if sql id or pw is incorrect it breaks
+    #This is an elegant way of handling the errors where we are informed
+    #through the terminal screen on what is going on.
     except cx_Oracle.DatabaseError as exc:
         error, = exc.args
         print( sys.stderr, "Oracle code:", error.code)
         print( sys.stderr, "Oracle message:", error.message)
         
+#This notation forces the main method to be called.
 if __name__ == "__main__":
     main()
