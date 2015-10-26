@@ -24,6 +24,8 @@ def loginMenu(connection):
     loginMenu = True
     oldUser = False
     newUser = False
+    userEmail = "irrelevantPlaceholder"
+    userPassword = "irrelevantPlaceholder2"
     loginOptions = {}
     loginOptions['1'] = "Already Registered"
     loginOptions['2'] = "Not Already Registered" 
@@ -46,7 +48,7 @@ def loginMenu(connection):
 
 
         if loginMenuSelection == '3':
-             return(False) 
+             return(False, userEmail, userPassword) 
             
             #THIS IS GOING TO BE THE NEW USER SCREEN!
         if newUser == True:
@@ -58,12 +60,13 @@ def loginMenu(connection):
 
             curs.execute(sqlRegisterString)
             connection.commit()
-
+            userEmail = newUserName
+            userPassword = newUserPass
 
             print("Name and password accepted and put into database!")
             print("Putting you into the application itself...")
             loginMenu = False
-            return(True)
+            return(True, userEmail, userPassword)
 		
 
         
@@ -82,9 +85,11 @@ def loginMenu(connection):
                     print("Please try again! :(")
                 if row[0] == 1:
                     print("We have you in the database! Login confirmed!")
-                    return
+                    userEmail = oldUserName
+                    userPassword = oldUserPass
+                    return(True, userEmail, userPassword)
 
-def mainMenu(connection):
+def mainMenu(connection, userEmail, userPassword):
     #Now we have that main menu of a trillion various options as requested.
     #Initialize all the things.
 
@@ -123,7 +128,7 @@ def mainMenu(connection):
     
             
         if mainMenuSelection == '5':
-            logoutConfirm = logoutFunction()
+            logoutConfirm = logoutFunction(connection, userEmail, userPassword)
             return logoutConfirm
             
         if mainMenuSelection == '6':
@@ -239,9 +244,13 @@ def makeBookingOption(connection):
     check.close()
     curs.close()
 
-def logoutFunction():
-    print("LOG OUT")
-    print("Saved time of logoff!")
+def logoutFunction(connection, userEmail, userPassword):
+    curs = connection.cursor()
+    curs.execute("UPDATE users set last_login = SYSDATE where email = " + "'" + 
+        userEmail + "'" + " and pass = " + "'" + userPassword + "'" )
+    connection.commit()
+    print("LOGGED OUT")
+    print("Saved time of logoff into database!")
     return (True)    
     
     
@@ -287,14 +296,14 @@ def main():
         #creates the view table of available flights upon connection
         create_available_view(connection)
         #user login stuff here
-        loginSuccess = loginMenu(connection)
+        loginSuccess, userEmail, userPassword = loginMenu(connection)
         if loginSuccess == False:
             exitCommand = True
             print("Application closed, no successful login attempt.")
         #Allow constant repetition of the main menu for the user.
         while exitCommand != True:
 
-            exitCommand = mainMenu(connection)
+            exitCommand = mainMenu(connection, userEmail, userPassword)
         connection.close()
 
     #if sql id or pw is incorrect it breaks
