@@ -190,12 +190,27 @@ def makeBookingOption(connection):
     cursInsert.close()
     print("Please enter the flight number of your booking, fare type, departure date and the seat number")
     user_flightno = input("Enter flight number:")
+    user_flightno = "'"+user_flightno+"'"
     user_fare = input("Enter fare type:")
+    user_fare = "'"+user_fare+"'"
     user_departure = input("Enter departure date:")
+    user_departure = "'"+user_departure+"'"
     user_seat = input("Enter the seat number:")
+    user_seat = "'"+user_seat+"'"
 
-
-
+    check = connection.cursor()
+    print("SELECT * from bookings where flightno = "+user_flightno+" and fare = "+user_fare+" and dep_date = "+user_departure+" and seat = "+user_seat)
+    check.execute("SELECT * from bookings where flightno = "+user_flightno+" and fare = "+user_fare+" and dep_date = "+user_departure+" and seat = "+user_seat)
+    row = check.fetchall()
+    if row:
+        print("The seat",user_seat,"you are tring to book on flight",user_flightno,"is already staken")
+    else:
+        print("jere")
+        curs.execute("SELECT * from available_flights where flightno = "+user_flightno+" and fare = "+user_fare+" and dep_date = "+user_departure)
+        rows = curs.fetchall()
+        for i in rows:
+            print(i)
+    check.close()
     curs.close()
 
 def logoutFunction():
@@ -257,10 +272,6 @@ def main():
         error, = exc.args
         print( sys.stderr, "Oracle code:", error.code)
         print( sys.stderr, "Oracle message:", error.message)
-
-
-
         
-
 if __name__ == "__main__":
     main()
