@@ -17,13 +17,16 @@ def create_available_view(connection):
     curs.close()
 
 def loginMenu(connection):
+    #Here the connection cursor is established! 
+    curs= connection.cursor()
     #INITIAL SCREEN FOR SCREENING NEW OR OLD USERS.
     loginMenu = True
     oldUser = False
     newUser = False
     loginOptions = {}
     loginOptions['1'] = "Already Registered"
-    loginOptions['2'] = "Not Already Registered"
+    loginOptions['2'] = "Not Already Registered" 
+    loginOptions['3'] = "Exit"
     
     while loginMenu == True:
     
@@ -39,6 +42,10 @@ def loginMenu(connection):
         if loginMenuSelection == '2':
             print("GO TO NEW REGISTRATION PAGE!")
             newUser = True
+
+
+        if loginMenuSelection == '3':
+             return(False) 
             
             #THIS IS GOING TO BE THE NEW USER SCREEN!
         if newUser == True:
@@ -47,23 +54,32 @@ def loginMenu(connection):
             newUserPass = input("Give me your password!: ")	
             sqlRegisterString = ("INSERT INTO users (email, pass, last_login) "
                 + "VALUES (" +  "'" +newUserName+"'" + ", " +"'" +newUserPass +"'" + ", SYSDATE)")
-            curs= connection.cursor()
+
             curs.execute(sqlRegisterString)
 
 
             print("Name and password accepted and put into database!")
             loginMenu = False
-            return
+            return(True)
 		
 
         
         if oldUser == True:
-            print("Okay we've got you, now give me your username!")
+            print("You stated you were in the database. Please give your info:")
             oldUserName = input("Give me your Email!: ")
             oldUserPass = input("Give me your password!: ")
-            print("Welcome back!")
-            loginMenu = False     
-            return
+            sqlLoginString = ("Select count(*) from users where email = " 
+                + "'" + oldUserName + "'" + " and pass = " + "'" + oldUserPass + "'")
+            curs.execute(sqlLoginString)
+            rows = curs.fetchall()
+            if rows[0] != 1:
+                print("You are NOT in the database!")
+                continue
+
+            if rows[0] == 1:
+                print("Welcome back!")
+                loginMenu = False     
+                return(True)
         
 
 def mainMenu(connection):
@@ -269,9 +285,13 @@ def main():
         #creates the view table of available flights upon connection
         create_available_view(connection)
         #user login stuff here
-        loginMenu(connection)
+        loginSuccess = loginMenu(connection)
+        if loginSuccess == False:
+            exitCommand = True
+            print("Application closed, no successful login attempt.")
         #Allow constant repetition of the main menu for the user.
         while exitCommand != True:
+
             exitCommand = mainMenu(connection)
         connection.close()
 
