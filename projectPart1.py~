@@ -56,9 +56,11 @@ def loginMenu(connection):
                 + "VALUES (" +  "'" +newUserName+"'" + ", " +"'" +newUserPass +"'" + ", SYSDATE)")
 
             curs.execute(sqlRegisterString)
+            connection.commit()
 
 
             print("Name and password accepted and put into database!")
+            print("Putting you into the application itself...")
             loginMenu = False
             return(True)
 		
@@ -71,16 +73,15 @@ def loginMenu(connection):
             sqlLoginString = ("Select count(*) from users where email = " 
                 + "'" + oldUserName + "'" + " and pass = " + "'" + oldUserPass + "'")
             curs.execute(sqlLoginString)
+            connection.commit()
             rows = curs.fetchall()
-            if rows[0] != 1:
-                print("You are NOT in the database!")
-                continue
-
-            if rows[0] == 1:
-                print("Welcome back!")
-                loginMenu = False     
-                return(True)
-        
+            for row in rows:
+                if row[0] == 0:
+                    print("Sorry you are not in the database. \n Maybe you made a typo?")
+                    print("Please try again! :(")
+                if row[0] == 1:
+                    print("We have you in the database! Login confirmed!")
+                    return
 
 def mainMenu(connection):
     #Now we have that main menu of a trillion various options as requested.
