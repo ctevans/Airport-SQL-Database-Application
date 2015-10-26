@@ -3,7 +3,8 @@ import cx_Oracle # the package used for accessing Oracle in Python
 import getpass # the package for getting password from user without displaying it
 
 
-
+# This function when evoked will create a view that is extremely useful
+#for the rest of the program and is utilized quite a bit.
 def create_available_view(connection):
 
     #crazy shit creating the available flights view table if it does not exist,
@@ -18,6 +19,12 @@ def create_available_view(connection):
     curs.execute("create view available_flights(flightno,dep_date, src,dst,dep_time,arr_time,fare,seats,price) as select f.flightno, sf.dep_date, f.src, f.dst, f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time)), f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time))+(f.est_dur/60+a2.tzone-a1.tzone)/24, fa.fare, fa.limit-count(tno), fa.price from flights f, flight_fares fa, sch_flights sf, bookings b, airports a1, airports a2 where f.flightno=sf.flightno and f.flightno=fa.flightno and f.src=a1.acode and f.dst=a2.acode and fa.flightno=b.flightno(+) and fa.fare=b.fare(+) and sf.dep_date=b.dep_date(+) group by f.flightno, sf.dep_date, f.src, f.dst, f.dep_time, f.est_dur,a2.tzone, a1.tzone, fa.fare, fa.limit, fa.price having fa.limit-count(tno) > 0 ")
     curs.close()
 
+# loginMenu is the first thing that the user will hit in the terminal screen, 
+#where the user is going to have to decide if they are already registered or
+#if they are not already registered. Alternatively they can just exit.
+#Perhaps one of the most core things about this aside from that is the fact
+#that this returns the username and password of the user to the main bulk of
+#the program.
 def loginMenu(connection):
     #Here the connection cursor is established! 
     curs= connection.cursor()
@@ -32,57 +39,67 @@ def loginMenu(connection):
     loginOptions['2'] = "Not Already Registered" 
     loginOptions['3'] = "Exit"
     
+    # So long as the loginMenu is true we will continually loop through this.
+    #essentially forcing the user to make some meaningful decision.
     while loginMenu == True:
-    
         print("LOGIN SCREEN:\nAre you registered yet or not?\n")
         for eachOption in loginOptions:
             print (eachOption, loginOptions[eachOption])
-    
+        #Obtain the user choice.
+        #This is going to set booleans which will control flow access.
         loginMenuSelection = input("Choose an option from above ")
-        
         if loginMenuSelection == '1':
             print("GO TO USERNAME AND PASSWORD PART!")
-            oldUser = True
+            oldUser = True #This user is requesting as an old user!
         if loginMenuSelection == '2':
             print("GO TO NEW REGISTRATION PAGE!")
-            newUser = True
-
-
+            newUser = True #This user is requesting as a new user!
         if loginMenuSelection == '3':
-             return(False, userEmail, userPassword) 
-            
-            #THIS IS GOING TO BE THE NEW USER SCREEN!
+             return(False, userEmail, userPassword) #EXIT with placeholders
+      
+        #USER REGISTRATION SCREEN.
+        #This is the dumping zone for all functionalities needed to allow
+        #the user to register. 
         if newUser == True:
             print("Please enter information to register.")
             newUserName = input("Give me your Email!: ")
-            newUserPass = input("Give me your password!: ")	
+            newUserPass = input("Give me your password!: ")
+            #Place the variables into a string that will be sent through Oracle	
             sqlRegisterString = ("INSERT INTO users (email, pass, last_login) "
                 + "VALUES (" +  "'" +newUserName+"'" + ", " +"'" +newUserPass +
                 "'" + ", SYSDATE)")
-            #I want to make sure we have no attempted duplicate emails.
-            #So that is what this block here is!
+            #DUPLICATE BLOCK.
+            #This block is dedicated to seeing if a new registration is 
+            #attempting to use a username we ALREADY have in the database.
+            #First thing to do is to formulate the string to be sent to Oracle
             sqlDoubleRegistrationString = ("Select count(*) from users where "
                 "email = " + "'" + newUserName + "'")
             curs.execute(sqlDoubleRegistrationString)
             rows = curs.fetchall()
-            doubleRegistrationError = False
+            doubleRegistrationError = False #Predefine there to be no error
+            #Check and directly compare values here. IS there a duplicate?!
+            #If so then I will set a warning flag to reject this registration.
             for row in rows:
                 if row[0] == 1:
                     print("\nERROR! We already have THAT email in the "
                         "database!")
                     print("Please try another email...? ....?????\n")
-                    doubleRegistrationError = True
+                    doubleRegistrationError = True #ERROR! Already have email!
+            #This block ONLY WORKS if the flag was set that we DO NOT already
+            #have that email! 
             if doubleRegistrationError != True:
-                #At this point we've determined they aren't a duplicate
-                #and will move ahead with registration of the user!
-                curs.execute(sqlRegisterString)
-                connection.commit()
-                userEmail = newUserName
+                curs.execute(sqlRegisterString) #execute SQL command
+                connection.commit() #SAVE the database changes!!!!!!!!!!!
+
+                #Set variables to the entered email and password and
+                #then send these username and password back to the bulk
+                # of the program
+                userEmail = newUserName 
                 userPassword = newUserPass
                 print("Name and password accepted and put into database!")
                 print("Putting you into the application itself...")
                 loginMenu = False
-                return(True, userEmail, userPassword)
+                return(True, userEmail, userPassword) 
 		
 
         
