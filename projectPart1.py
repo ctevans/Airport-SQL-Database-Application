@@ -30,7 +30,7 @@ def create_good_connections(connection):
     for row in rows:
         if row[0] == "GOOD_CONNECTIONS":
             curs.execute("DROP view good_connections")
-    curs.execute("create view good_connections (src,dst,dep_date,flightno1,flightno2, layover,price) as select a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, a2.dep_time-a1.arr_time, min(a1.price+a2.price) from available_flights a1, available_flights a2 where a1.dst=a2.src and a1.arr_time +1.5/24 <=a2.dep_time and a1.arr_time +5/24 >=a2.dep_time group by a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, a2.dep_time, a1.arr_time")
+    curs.execute("create view good_connections (src,dst,dep_date,arr_time,flightno1,flightno2, layover,price,seats,fare1,fare2) as select a1.src, a2.dst, a1.dep_date,a2.arr_time, a1.flightno, a2.flightno, a2.dep_time-a1.arr_time, min(a1.price+a2.price), min(a1.seats+a2.seats),a1.fare,a2.fare from available_flights a1, available_flights a2 where a1.dst=a2.src and a1.arr_time +1.5/24 <=a2.dep_time and a1.arr_time +5/24 >=a2.dep_time group by a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, a2.dep_time, a1.arr_time, a2.arr_time, a1.fare, a2.fare")
     connection.commit()
     curs.close()
 
@@ -261,19 +261,29 @@ def searchForFlights(connection):
     #only taking departure date in this format
     flight_departure = input("Enter departure date in DD-Mon-YY format: ")
     print("\n")
+    orderCheck = input("How would you like your results to be sorted(CON/PRI): ")
+    if orderCheck == "CON":
+        #direct flight results
+        curs.execute("SELECT flightno, src, dst, dep_date, arr_time, seats,"
+           " price FROM AVAILABLE_FLIGHTS WHERE src =" + "'" +flight_source+ "'" +
+           " AND dst =" + "'" +flight_destination+ "'" + " and dep_date =" + "'" +
+           flight_departure+ "'" + " and seats > 1 ORDER BY price")
+        rows = curs.fetchall()
+        for row in rows:
+            print("|Flight Number:",row[0],"|Source Airport:",row[1],
+                "|Destination Airport:",row[2],"|Departure Date:",
+                row[3].strftime('%d-%b-%Y'),"|Arrival Time:",row[4].strftime('%d-%b-%Y') ,"|Seats Available:",row[5],
+                "|Seat Price:",row[6],"|number of stops: 0")
+        curs.execute("SELECT flightno1, fare1, flightno2, fare2, src, dst, dep_date, layover,seats, price from good_connections where src ="+"'" +flight_source+ "'"+" AND dst =" + "'" +flight_destination+ "'" + " and dep_date =" + "'" + flight_departure+ "'")
+        rows = curs.fetchall()
+        for row in rows:
+            print("|Initial Flight Number:",row[0],"|Initial Fare Type:",row[1],"|Connecting Flight Number:",row[2],"|Connecting Fare Type:",row[3],"|Source Airport:",row[4],"|Destination Airport:",row[5],"|Departure Date:",row[6],"|Layover Time:",row[7],"|Seats Available:",row[8],"|Seat Price:",row[9])
+    elif orderCheck == "PRI":
+        pass
 
-    #direct flight results
-    curs.execute("SELECT flightno, src, dst, dep_date, seats,"
-       " price FROM AVAILABLE_FLIGHTS WHERE src =" + "'" +flight_source+ "'" +
-       " AND dst =" + "'" +flight_destination+ "'" + " and dep_date =" + "'" +
-       flight_departure+ "'" + " and seats > 1 ORDER BY price")
-    rows = curs.fetchall()
-    for row in rows:
-        print("|Flight Number:",row[0],"|Source Airport:",row[1],
-            "|Destination Airport:",row[2],"|Departure Date:",
-            row[3].strftime('%d-%b-%Y'), "|Seats Available:",row[4],
-            "|Seat Price",row[5])
-    bookingCheck = input("Would you like to booking a flight?(Y/N): ")
+
+
+    bookingCheck = input("Would you like to book a flight?(Y/N): ")
     if bookingCheck == "Y":
         makeBookingOption(connection)
     else:
