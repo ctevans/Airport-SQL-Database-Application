@@ -1,6 +1,7 @@
 import sys
 import cx_Oracle # the package used for accessing Oracle in Python
 import getpass # the package for getting password from user without displaying it
+import random
 
 
 # This function when evoked will create a view that is extremely useful
@@ -13,7 +14,7 @@ def create_available_view(connection):
     curs.execute("SELECT view_name from user_views")
     rows = curs.fetchall()
     for row in rows:
-        print(row[0])
+        #print(row[0])
         if row[0] == "AVAILABLE_FLIGHTS" :
             curs.execute("DROP view available_flights")
     curs.execute("create view available_flights(flightno,dep_date, src,dst,dep_time,arr_time,fare,seats,price) as select f.flightno, sf.dep_date, f.src, f.dst, f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time)), f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time))+(f.est_dur/60+a2.tzone-a1.tzone)/24, fa.fare, fa.limit-count(tno), fa.price from flights f, flight_fares fa, sch_flights sf, bookings b, airports a1, airports a2 where f.flightno=sf.flightno and f.flightno=fa.flightno and f.src=a1.acode and f.dst=a2.acode and fa.flightno=b.flightno(+) and fa.fare=b.fare(+) and sf.dep_date=b.dep_date(+) group by f.flightno, sf.dep_date, f.src, f.dst, f.dep_time, f.est_dur,a2.tzone, a1.tzone, fa.fare, fa.limit, fa.price having fa.limit-count(tno) > 0 ")
@@ -69,6 +70,7 @@ def loginMenu(connection):
 
 
 
+
             #Place the variables into a string that will be sent through Oracle	
             sqlRegisterString = ("INSERT INTO users (email, pass, last_login) "
                 + "VALUES (" +  "'" +newUserName+"'" + ", " +"'" +newUserPass +
@@ -105,7 +107,7 @@ def loginMenu(connection):
                 print("Putting you into the application itself...")
                 loginMenu = False
                 return(True, userEmail, userPassword, False) 
-		
+        
 
         #USER LOGIN (OLD / ALREADY EXISTING USER!!!!) SCREEN
         #Obtain username(email) and password from the user.
@@ -134,7 +136,7 @@ def loginMenu(connection):
                     userPassword = oldUserPass
                     #Now I want to see if the user is an airline agent or not!!!
                     sqlAirlineAgentString = ("Select count(*) from "
-			"airline_agents where email = " + "'" + userEmail
+            "airline_agents where email = " + "'" + userEmail
                         + "'") 
                     curs.execute (sqlAirlineAgentString)
                     rows = curs.fetchall()
@@ -165,7 +167,9 @@ def mainMenu(connection, userEmail, userPassword, airLineAgent):
     #We have a series of menu options to choose from.
     while mainMenu == True:
         print("\n")
+
         print("Welcome to the main screen. We have various options here to choose from")
+
         for eachOption in mainMenuOptions:
             print (eachOption, mainMenuOptions[eachOption])
     
@@ -366,9 +370,6 @@ def makeBookingOption(connection):
     user_seat = "'"+user_seat+"'"
 
     check = connection.cursor()
-    print("SELECT * from bookings where flightno = "+user_flightno+
-        " and fare = "+user_fare+" and dep_date = "+user_departure+
-        " and seat = "+user_seat)
     check.execute("SELECT * from bookings where flightno = "+user_flightno+
         " and fare = "+user_fare+" and dep_date = "+user_departure+
         " and seat = "+user_seat)
@@ -377,13 +378,31 @@ def makeBookingOption(connection):
         print("The seat",user_seat,"you are tring to book on flight"
             ,user_flightno,"is already staken")
     else:
-        print("jere")
-        curs.execute("SELECT * from available_flights where flightno = "
-            +user_flightno+" and fare = "+user_fare+" and dep_date = "
-            +user_departure)
+        #INSERTING INTO BOOKINGS AND TICKETS ------------------------------------
+        ticket_no = random.randint(1000,999999)
+        curs.execute("SELECT * from tickets where tno ="+str(ticket_no))
         rows = curs.fetchall()
-        for i in rows:
-            print(i)
+        if rows :
+            ticket_no = random.randint(1000,999999)
+        #curs.execute("SELECT * from available_flights where flightno = "
+            #+user_flightno+" and fare = "+user_fare+" and dep_date = "
+            #+user_departure)
+        curs.execute("SELECT name from passengers where email = "+user_email)
+        rows = curs.fetchall()
+        user_name = rows[0][0]
+        user_name = "'"+user_name+"'"
+        curs.execute("SELECT distinct price from available_flights where flightno ="+user_flightno+" AND fare ="+user_fare)
+        rows = curs.fetchall()
+        user_price = rows[0][0]
+        cursInsertTicket = connection.cursor()
+        cursInsertTicket.execute("INSERT INTO tickets values "+"("+str(ticket_no)+","+user_name+","+user_email+","+str(user_price)+")")
+        connection.commit()
+        cursInsertBooking = connection.cursor()
+        #print("INSERT INTO BOOKINGS values "+"("+str(ticket_no)+","+user_flightno+","+user_fare+","+user_departure+","+user_seat+")")
+        cursInsertBooking.execute("INSERT INTO BOOKINGS values "+"("+str(ticket_no)+","+user_flightno+","+user_fare+","+user_departure+","+user_seat+")")
+        connection.commit()
+        cursInsertBooking.close()
+        #END OF INSTERTION ------------------------------------------------------
     check.close()
     curs.close()
 
