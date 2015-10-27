@@ -191,7 +191,7 @@ def mainMenu(connection, userEmail, userPassword, airLineAgent):
         
         mainMenuSelection = input("Which option do you want?: ")
         if mainMenuSelection == '1':
-            searchForFlights(connection)
+            searchForFlights(connection, userEmail)
     
             
         if mainMenuSelection == '2':
@@ -215,7 +215,7 @@ def mainMenu(connection, userEmail, userPassword, airLineAgent):
 
 
 #All of the functions called upon by the main menu. (All 6 options!) 
-def searchForFlights(connection):
+def searchForFlights(connection, user_email):
     # prompt user for source, destination and departure date
     curs = connection.cursor()
     print("SEARCH FOR FLIGHTS OPTION")
@@ -286,7 +286,7 @@ def searchForFlights(connection):
 
     bookingCheck = input("Would you like to book a flight?(Y/N): ")
     if bookingCheck == "Y":
-        makeBookingOption(connection)
+        makeBookingOption(connection, user_email)
     else:
         pass
 
