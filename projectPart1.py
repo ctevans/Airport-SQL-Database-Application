@@ -71,7 +71,7 @@ def loginMenu(connection):
 
 
 
-            #Place the variables into a string that will be sent through Oracle	
+            #Place the variables into a string that will be sent through Oracle 
             sqlRegisterString = ("INSERT INTO users (email, pass, last_login) "
                 + "VALUES (" +  "'" +newUserName+"'" + ", " +"'" +newUserPass +
                 "'" + ", SYSDATE)")
@@ -259,6 +259,11 @@ def searchForFlights(connection):
             "|Destination Airport:",row[2],"|Departure Date:",
             row[3].strftime('%d-%b-%Y'), "|Seats Available:",row[4],
             "|Seat Price",row[5])
+    bookingCheck = input("Would you like to booking a flight?(Y/N): ")
+    if bookingCheck == "Y":
+        makeBookingOption(connection)
+    else:
+        pass
 
     curs.close()
 
