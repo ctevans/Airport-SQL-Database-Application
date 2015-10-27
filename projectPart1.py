@@ -326,31 +326,37 @@ def makeBookingOption(connection):
         print("The seat",user_seat,"you are tring to book on flight"
             ,user_flightno,"is already staken")
     else:
-        #INSERTING INTO BOOKINGS AND TICKETS ------------------------------------
-        ticket_no = random.randint(1000,999999)
-        curs.execute("SELECT * from tickets where tno ="+str(ticket_no))
+        #PRE INSTERSION CHECK----------------------------------------------------
+        curs.execute("SELECT * from available_flights where flightno = "+user_flightno+
+        " and fare = "+user_fare+" and dep_date = "+user_departure)
         rows = curs.fetchall()
-        if rows :
+        #END OF CHECK------------------------------------------------------------
+        if rows:
+            #INSERTING INTO BOOKINGS AND TICKETS ------------------------------------
             ticket_no = random.randint(1000,999999)
-        #curs.execute("SELECT * from available_flights where flightno = "
-            #+user_flightno+" and fare = "+user_fare+" and dep_date = "
-            #+user_departure)
-        curs.execute("SELECT name from passengers where email = "+user_email)
-        rows = curs.fetchall()
-        user_name = rows[0][0]
-        user_name = "'"+user_name+"'"
-        curs.execute("SELECT distinct price from available_flights where flightno ="+user_flightno+" AND fare ="+user_fare)
-        rows = curs.fetchall()
-        user_price = rows[0][0]
-        cursInsertTicket = connection.cursor()
-        cursInsertTicket.execute("INSERT INTO tickets values "+"("+str(ticket_no)+","+user_name+","+user_email+","+str(user_price)+")")
-        connection.commit()
-        cursInsertBooking = connection.cursor()
-        #print("INSERT INTO BOOKINGS values "+"("+str(ticket_no)+","+user_flightno+","+user_fare+","+user_departure+","+user_seat+")")
-        cursInsertBooking.execute("INSERT INTO BOOKINGS values "+"("+str(ticket_no)+","+user_flightno+","+user_fare+","+user_departure+","+user_seat+")")
-        connection.commit()
-        cursInsertBooking.close()
+            curs.execute("SELECT * from tickets where tno ="+str(ticket_no))
+            rows = curs.fetchall()
+            if rows :
+                ticket_no = random.randint(1000,999999)
+            curs.execute("SELECT name from passengers where email = "+user_email)
+            rows = curs.fetchall()
+            user_name = rows[0][0]
+            user_name = "'"+user_name+"'"
+            curs.execute("SELECT distinct price from available_flights where flightno ="+user_flightno+" AND fare ="+user_fare)
+            rows = curs.fetchall()
+            user_price = rows[0][0]
+            cursInsertTicket = connection.cursor()
+            cursInsertTicket.execute("INSERT INTO tickets values "+"("+str(ticket_no)+","+user_name+","+user_email+","+str(user_price)+")")
+            connection.commit()
+            cursInsertTicket.close()
+            cursInsertBooking = connection.cursor()
+            cursInsertBooking.execute("INSERT INTO BOOKINGS values "+"("+str(ticket_no)+","+user_flightno+","+user_fare+","+user_departure+","+user_seat+")")
+            connection.commit()
+            cursInsertBooking.close()
         #END OF INSTERTION ------------------------------------------------------
+            print("Your flight has been successfully booked, your ticket number is",ticket_no)
+        else:
+            print("The flight you were trying to book either does not exist in our database or is already full, sorry.")
     check.close()
     curs.close()
 
