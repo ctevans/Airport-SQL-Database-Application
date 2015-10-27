@@ -266,22 +266,50 @@ def searchForFlights(connection, user_email):
     if orderCheck == "CON":
         #direct flight results
         curs.execute("SELECT flightno, src, dst, dep_date, arr_time, seats,"
-           " price FROM AVAILABLE_FLIGHTS WHERE src =" + "'" +flight_source+ "'" +
+           " price, fare FROM AVAILABLE_FLIGHTS WHERE src =" + "'" +flight_source+ "'" +
            " AND dst =" + "'" +flight_destination+ "'" + " and dep_date =" + "'" +
            flight_departure+ "'" + " and seats > 1 ORDER BY price")
+
+        counter=0
         rows = curs.fetchall()
         for row in rows:
-            print("|Flight Number:",row[0],"|Source Airport:",row[1],
+            counter=counter+1
+            print(str(counter).ljust(4)+"|Flight Number:",row[0],"|Source Airport:",row[1],
                 "|Destination Airport:",row[2],"|Departure Date:",
                 row[3].strftime('%d-%b-%Y'),"|Arrival Time:",row[4].strftime('%d-%b-%Y') ,"|Seats Available:",row[5],
                 "|Seat Price:",row[6],"|number of stops: 0|\n")
         curs.execute("SELECT flightno1, fare1, flightno2, fare2, src, dst, dep_date, arr_time, layover,seats, price from good_connections where src ="+"'" +flight_source+ "'"+" AND dst =" + "'" +flight_destination+ "'" + " and dep_date =" + "'" + flight_departure+ "'")
-        rows = curs.fetchall()
-        for row in rows:
-            print("|Initial Flight Number:",row[0],"|Initial Fare Type:",row[1],"|Connecting Flight Number:",row[2],"|Connecting Fare Type:",row[3],"|Source Airport:",row[4],"|Destination Airport:",row[5],"|Departure Date:",row[6].strftime('%d-%b-%Y'), "|Arrival Time:", row[7].strftime('%d-%b-%Y'),"|Layover Time:",row[8],"|Seats Available:",row[9],"|Seat Price:",row[10],"|Number of stops: 1|\n")
+        rows2 = curs.fetchall()
+        for row in rows2:
+            counter=counter+1
+            print(str(counter).ljust(4)+"|Initial Flight Number:",row[0],"|Initial Fare Type:",row[1],"|Connecting Flight Number:",row[2],"|Connecting Fare Type:",row[3],"|Source Airport:",row[4],"|Destination Airport:",row[5],"|Departure Date:",row[6].strftime('%d-%b-%Y'), "|Arrival Time:", row[7].strftime('%d-%b-%Y'),"|Layover Time:",row[8],"|Seats Available:",row[9],"|Seat Price:",row[10],"|Number of stops: 1|\n")
+        
+
+        if counter==0:
+            print("There are no flights to show!")
+            return
+        #merge both rows
+        allRows = rows + rows2
+
+        ##ask user if booking is wanted                                                                                                                                                                            
+
+        bookingCheck = input("Would you like to book a flight?(Y/N): ")
+        if bookingCheck == "Y":
+            userRow = input("What is the corresponding row number?: ")
+            selectedRow = allRows[int(userRow)-1]
+            if (len(selectedRow)<9):
+                makeBookingNoInput(connection,user_email,selectedRow[0],selectedRow[3].strftime('%d-%b-%Y'),selectedRow[7])
+            else:
+                print("First flight")
+                makeBookingNoInput(connection,user_email,selectedRow[0],selectedRow[6].strftime('%d-%b-%Y'),selectedRow[1])
+                print("Second flight")
+                makeBookingNoInput(connection,user_email,selectedRow[2],(selectedRow[7]+selectedRow(8)).strftime('%d-%b-%Y'),selectedRow[3])
+        else:
+            pass
+
     elif orderCheck == "PRI":
                 #direct flight results                                                                                                                                                                                  
-        curs.execute("SELECT price, flightno, src, dst, dep_date, arr_time, seats"
+        curs.execute("SELECT price, flightno, src, dst, dep_date, arr_time, seats, fare"
            " FROM AVAILABLE_FLIGHTS WHERE src =" + "'" +flight_source+ "'" +
            " AND dst =" + "'" +flight_destination+ "'" + " and dep_date =" + "'" +
            flight_departure+ "'" + " and seats > 1 ORDER BY price")
@@ -301,22 +329,42 @@ def searchForFlights(connection, user_email):
         #sory them using the imported package (by price)
         sortedrows = sorted(allrows, key=itemgetter(0))
         
+        counter=0
         #print appropriate information depending on which table it came from 
         for row in sortedrows:
-
-            if len(row)<8:
-                print("|Seat Price:",row[0],"|Flight Number:",row[1],"|Source Airport:",row[2],"|Destination Airport:",row[3],"|Departure Date:",row[4].strftime('%d-%b-%Y'),"|Arrival Time:",row[5].strftime('%d-%b-%Y') ,"|Seats Available:",row[6],"|number of stops: 0|\n")
+            
+            counter=counter+1
+            
+            if len(row)<9:
+                print(str(counter).ljust(4),"|Seat Price:",row[0],"|Flight Number:",row[1],"|Source Airport:",row[2],"|Destination Airport:",row[3],"|Departure Date:",row[4].strftime('%d-%b-%Y'),"|Arrival Time:",row[5].strftime('%d-%b-%Y') ,"|Seats Available:",row[6],"|number of stops: 0|\n")
 
             else:
 
                 print("|Seat Price:",row[0],"|Initial Flight Number:",row[1],"|Initial Fare Type:",row[2],"|Connecting Flight Number:",row[3],"|Connecting Fare Type:",row[4],"|Source Airport:",row[5],"|Destination Airport:",row[6],"Departure Date:",row[7].strftime('%d-%b-%Y'), "|Arrival Time:", row[8].strftime('%d-%b-%Y'),"|Layover Time:",row[9],"|Seats Available:",row[10],"|Number of stops: 1|\n")
+            
 
-    ##ask user if booking is wanted
-    bookingCheck = input("Would you like to book a flight?(Y/N): ")
-    if bookingCheck == "Y":
-        makeBookingOption(connection, user_email)
-    else:
-        pass
+        if counter==0:
+            print("There are no flights to show!")
+            return
+
+        ##ask user if booking is wanted   def makeBookingNoInput(connection,user_email,user_flightno,user_departure):
+
+        bookingCheck = input("Would you like to book a flight?(Y/N): ")
+        if bookingCheck == "Y":
+            userRow = input("What is the corresponding row number?: ")
+            selectedRow = sortedrows[int(userRow)-1]
+            if (len(selectedRow)<9):
+                makeBookingNoInput(connection,user_email,selectedRow[1],selectedRow[4].strftime('%d-%b-%Y'),selectedRow[7])  
+            else:
+                print("First flight:")
+                print(selectedRow[6])
+                makeBookingNoInput(connection,user_email,selectedRow[1],selectedRow[6].strftime('%d-%b-%Y'),selectedRow[1])
+
+                print("Second flight:")
+                makeBookingNoInput(connection,user_email,selectedRow[2],(selectedRow[7]+selectedRow[8]).strftime('%d-%b-%Y'),selectedRow[3])
+
+        else:
+            pass
 
     curs.close()
 
@@ -372,7 +420,7 @@ def listAndDeleteExitingBookings(connection,user_email):
         curs.execute("SELECT * FROM bookings WHERE bookings.tno="+str(rows[int(users_row_number)-1][0]))
 
         rows = curs.fetchall()
-        print("Ticket number: "+str(rows[0][0])+"\nFlight number: "+rows[0][1]+"\nFare: "+rows[0][2]+"\nDeparture date: "+str(rows[0][3]).strftime('%d-%b-%Y')+"\nSeat: "+rows[0][4])
+        print("Ticket number: "+str(rows[0][0])+"\nFlight number: "+rows[0][1]+"\nFare: "+rows[0][2]+"\nDeparture date: "+str(rows[0][3])+"\nSeat: "+rows[0][4])
 
     #delete that booking
     if users_choice == '2':
@@ -409,9 +457,9 @@ def makeBookingOption(connection,user_email):
         pass
     else:
         print("\nThe name you've entered was not part of our database")
-        print("Please give us your name and your country")
-        user_name = input("Please enter your name:")
-        user_name = "'"+user_name+"'"
+        #print("Please give us your country")
+        #user_name = input("Please enter your name:")
+        #user_name = "'"+user_name+"'"
         user_country = input("Please enter your country:")
         user_country = "'"+user_country+"'"
 
@@ -467,6 +515,85 @@ def makeBookingOption(connection,user_email):
             connection.commit()
             cursInsertBooking.close()
         #END OF INSTERTION ------------------------------------------------------
+            print("Your flight has been successfully booked, your ticket number is",ticket_no)
+        else:
+            print("The flight you were trying to book either does not exist in our database or is already full, sorry.")
+    check.close()
+    curs.close()
+
+def makeBookingNoInput(connection,user_email,user_flightno,user_departure,user_fare):
+    curs = connection.cursor()
+    cursInsert = connection.cursor()
+    #print("MAKE A BOOKING OPTION")
+    user_name = input("Please enter your name: ")
+    user_name = "'"+user_name+"'"
+    user_email = "'"+user_email+"'"
+    curs.execute("SELECT * from passengers where name ="+user_name+" AND email = "+user_email)
+    rows = curs.fetchall()
+
+    if rows:
+        pass
+    else:
+        print("\nThe name you've entered was not part of our database")
+        #print("Please give us your name and your country")
+        #user_name = input("Please enter your name:")
+        #user_name = "'"+user_name+"'"
+        user_country = input("Please enter your country:")
+        user_country = "'"+user_country+"'"
+        cursInsert.execute("INSERT INTO PASSENGERS values "+"("+user_email+
+            ","+user_name+","+user_country+")");
+        connection.commit()
+    cursInsert.close()
+    #print("Please enter the flight number of your booking, fare type, "
+     #   "departurce date and the seat number")
+    #user_flightno = input("Enter flight number:")
+    user_flightno = "'"+user_flightno+"'"
+    #user_fare = input("Enter fare type:")
+    user_fare = "'"+user_fare+"'"
+    #user_departure = input("Enter departure date in DD-Mon-YY format:")
+    user_departure = "'"+user_departure+"'"
+    user_seat = input("Enter the seat number:")
+    user_seat = "'"+user_seat+"'"
+
+    check = connection.cursor()
+    check.execute("SELECT * from bookings where flightno = "+user_flightno+
+        " and fare = "+user_fare+" and dep_date = "+user_departure+
+        " and seat = "+user_seat)
+    row = check.fetchall()
+    if row:
+        print("The seat",user_seat,"you are tring to book on flight"
+            ,user_flightno,"is already staken")
+    else:
+        #PRE INSTERSION CHECK----------------------------------------------------                                                            
+        curs.execute("SELECT * from available_flights where flightno = "+user_flightno+
+        " and fare = "+user_fare+" and dep_date = "+user_departure)
+        rows = curs.fetchall()
+        #END OF CHECK------------------------------------------------------------                                                            
+        if rows:
+            #INSERTING INTO BOOKINGS AND TICKETS ------------------------------------              
+
+                                                       
+            ticket_no = random.randint(1000,999999)
+            curs.execute("SELECT * from tickets where tno ="+str(ticket_no))
+            rows = curs.fetchall()
+            if rows :
+                ticket_no = random.randint(1000,999999)
+            curs.execute("SELECT name from passengers where email = "+user_email)
+            rows = curs.fetchall()
+            user_name = rows[0][0]
+            user_name = "'"+user_name+"'"
+            curs.execute("SELECT distinct price from available_flights where flightno ="+user_flightno+" AND fare ="+user_fare)
+            rows = curs.fetchall()
+            user_price = rows[0][0]
+            cursInsertTicket = connection.cursor()
+            cursInsertTicket.execute("INSERT INTO tickets values "+"("+str(ticket_no)+","+user_name+","+user_email+","+str(user_price)+")")
+            connection.commit()
+            cursInsertTicket.close()
+            cursInsertBooking = connection.cursor()
+            cursInsertBooking.execute("INSERT INTO BOOKINGS values "+"("+str(ticket_no)+","+user_flightno+","+user_fare+","+user_departure+","+user_seat+")")
+            connection.commit()
+            cursInsertBooking.close()
+            #END OF INSTERTION ------------------------------------------------------                                                      
             print("Your flight has been successfully booked, your ticket number is",ticket_no)
         else:
             print("The flight you were trying to book either does not exist in our database or is already full, sorry.")
