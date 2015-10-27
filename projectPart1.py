@@ -49,10 +49,10 @@ def loginMenu(connection):
         #This is going to set booleans which will control flow access.
         loginMenuSelection = input("Choose an option from above ")
         if loginMenuSelection == '1':
-            print("GO TO USERNAME AND PASSWORD PART!")
+            #print("GO TO USERNAME AND PASSWORD PART!")
             oldUser = True #This user is requesting as an old user!
         if loginMenuSelection == '2':
-            print("GO TO NEW REGISTRATION PAGE!")
+            #print("GO TO NEW REGISTRATION PAGE!")
             newUser = True #This user is requesting as a new user!
         if loginMenuSelection == '3':
              return(False, userEmail, userPassword, False) #EXIT with placeholders
@@ -62,9 +62,8 @@ def loginMenu(connection):
         #the user to register. 
         if newUser == True:
             print("Please enter information to register.")
-            newUserName = input("Give me your Email!: ")
+            newUserName = input("Email: ")
             newUserPass = getpass.getpass()
-
 
 
 
@@ -89,7 +88,7 @@ def loginMenu(connection):
                 if row[0] == 1:
                     print("\nERROR! We already have THAT email in the "
                         "database!")
-                    print("Please try another email...? ....?????\n")
+                    print("Please try another email!\n")
                     doubleRegistrationError = True #ERROR! Already have email!
             #This block ONLY WORKS if the flag was set that we DO NOT already
             #have that email! 
@@ -115,9 +114,9 @@ def loginMenu(connection):
         #IFFFF we do have the combo then we will return to the main bulk of the
         #program with the given username, password and proceed with the program.
         if oldUser == True:
-            print("You stated you were in the database. Please give your info:")
-            oldUserName = input("Give me your Email!: ")
-            oldUserPass = input("Give me your password!: ")
+            print("Please give your log in info:")
+            oldUserName = input("Email!: ")
+            oldUserPass = getpass.getpass()
             sqlLoginString = ("Select count(*) from users where email = " 
                 + "'" + oldUserName + "'" + " and pass = " + "'" + oldUserPass + 
                 "'")
@@ -130,7 +129,7 @@ def loginMenu(connection):
                         "OR invalid password. \n Maybe you made a typo?")
                     print("Please try again! :(\n\n")
                 if row[0] == 1:
-                    print("We have you in the database! Login confirmed!")
+                    print("Login confirmed!")
                     userEmail = oldUserName
                     userPassword = oldUserPass
                     #Now I want to see if the user is an airline agent or not!!!
@@ -142,11 +141,11 @@ def loginMenu(connection):
                     for row in rows:
                         if row[0] == 0:
                             airLineAgent = False
-                            print("GAAHHHH!!!!!!!!")
+                            #print("GAAHHHH!!!!!!!!")
                             return(True, userEmail, userPassword, airLineAgent)
                         if row[0] > 0: 
                             airLineAgent = True
-                            print("FUCK!!!!!!!!!!!!!!!")
+                            #print("!!!!!!!!!!!!!!!")
                             return(True, userEmail, userPassword, airLineAgent)
             
 
@@ -158,22 +157,20 @@ def mainMenu(connection, userEmail, userPassword, airLineAgent):
     isAirlineAgent = False #THIS CAN BE TRUE OPENING MORE OPTIONS!
     mainMenuOptions['1'] = "Search for flights."
     mainMenuOptions['2'] = "Make a booking."
-    mainMenuOptions['3'] = "List exiting bookings."
-    mainMenuOptions['4'] = "Cancel a booking."
-    mainMenuOptions['5'] = "Logout."
-    mainMenuOptions['6'] = "AIRLINE AGENTS ONLY: Record a flight departure."
-    mainMenuOptions['7'] = "AIRLINE AGENTS ONLY: Record a flight arrival."
+    mainMenuOptions['3'] = "List and delete exiting bookings."
+    mainMenuOptions['4'] = "Logout."
+    mainMenuOptions['5'] = "AIRLINE AGENTS ONLY: Record a flight departure."
+    mainMenuOptions['6'] = "AIRLINE AGENTS ONLY: Record a flight arrival."
     #Initialize the mainMenu where the user will be looping through until
     #We have a series of menu options to choose from.
     while mainMenu == True:
         print("\n")
-        print("Welcome to the main screen. We have various options here to" +
-	"choose from")
+        print("Welcome to the main screen. We have various options here to choose from")
         for eachOption in mainMenuOptions:
             print (eachOption, mainMenuOptions[eachOption])
     
         
-        mainMenuSelection = input("Tell me which option you want: ")
+        mainMenuSelection = input("Which option do you want?: ")
         if mainMenuSelection == '1':
             searchForFlights(connection)
     
@@ -182,22 +179,18 @@ def mainMenu(connection, userEmail, userPassword, airLineAgent):
             makeBookingOption(connection)
     
         if mainMenuSelection == '3':
-            listExitingBookings()
+            listAndDeleteExitingBookings(connection)
     
             
         if mainMenuSelection == '4':
-            cancelABooking()
-    
-            
-        if mainMenuSelection == '5':
             logoutConfirm = logoutFunction(connection, userEmail, userPassword)
             return logoutConfirm
             
-        if mainMenuSelection == '6':
+        if mainMenuSelection == '5':
             recordFlightDeparture(airLineAgent, connection)
 
         
-        if mainMenuSelection == '7':
+        if mainMenuSelection == '6':
             recordFlightArrival(airLineAgent, connection)
     
 
@@ -206,7 +199,7 @@ def mainMenu(connection, userEmail, userPassword, airLineAgent):
 def searchForFlights(connection):
     # prompt user for source, destination and departure date
     curs = connection.cursor()
-    print("SEARCH FOR FLIGHTS OPTION BEGIN")
+    print("SEARCH FOR FLIGHTS OPTION")
     
     #sql statements for case insensitivity
     curs.execute("alter session set NLS_COMP=LINGUISTIC")
@@ -265,21 +258,77 @@ def searchForFlights(connection):
 
     curs.close()
 
-def listExitingBookings():
-    print("LIST EXISTING BOOKINGS")
+def listAndDeleteExitingBookings(connection):
+    print("VIEW AND DELETE EXISTING BOOKINGS OPTION")
+
+    #create cursor and get info from user
     curs = connection.cursor()
     user_email = input("Please enter your email: ")
     user_email = "'"+ user_email + "'"
-    #SELECT UNIQUE bookings.tno, passengers.name, bookings.dep_date, 
-    # tickets.paid_price FROM bookings, passengers, tickets
-    # WHERE bookings.tno=tickets.tno AND passengers.email=tickets.email
-    # AND passengers.name = tickets.name
+
+    #get the required info from the required tables
+    curs.execute("SELECT UNIQUE bookings.tno, passengers.name, bookings.dep_date, tickets.paid_price FROM bookings, passengers, tickets WHERE bookings.tno=tickets.tno AND passengers.email=tickets.email AND passengers.name = tickets.name AND passengers.email =" + user_email)
+
+    #get all rows, and initialize counter
+    rows = curs.fetchall()
+    counter=0
 
 
+    for row in rows:
+
+        #print top info bar
+        if counter==0:
+            print("Row number".ljust(25)+"Ticket number".ljust(25)+"Passenger name".ljust(25)+"Department date".ljust(25)+"Price".ljust(25))
+        counter+=1
+        
+        #print the row number first
+        print(str(counter).ljust(25), end="" )
+
+        #then print the rest of the info
+        for item in row:
+            print(str(item).strip().ljust(25),end="")
+        print("")
+
+    #if counter is still 0, there were no rows
+    if counter==0:
+        print("There are no bookings under than email!")
+        return
+
+    #let user decide  what bookings
+    print("Type the corresponding row number for more options (or type 'back' to go back)")
+    users_row_number = input("Row number: ")
+
+    #go back to menu
+    if users_row_number=="back":
+        return
+
+    #let user decide what to do with that booking
+    users_choice = input("Type 1 to get more details or 2 to cancel that booking: ")
     
-def cancelABooking():
-    print("CANCEL A BOOKING") 
-    
+    #get all info from the bookings table for that tno
+    if users_choice == '1':
+        curs.execute("SELECT * FROM bookings WHERE bookings.tno="+str(rows[int(users_row_number)-1][0]))
+
+        rows = curs.fetchall()
+        print("Ticket number: "+str(rows[0][0])+"\nFlight number: "+rows[0][1]+"\nFare: "+rows[0][2]+"\nDeparture date: "+str(rows[0][3])+"\nSeat: "+rows[0][4])
+
+    #delete that booking
+    if users_choice == '2':
+
+        #remove row from both tables
+        curs.execute("DELETE FROM bookings WHERE bookings.tno="+str(rows[int(users_row_number)-1][0]))
+        curs.execute("DELETE FROM tickets WHERE tickets.tno="+str(rows[int(users_row_number)-1][0]))
+
+        #commit it
+        connection.commit()
+
+        #recreate the view with both new tables
+        create_available_view(connection)
+        print("DELETE SUCCESSFULL!")
+        
+    #finally, close the cursor
+    curs.close()
+
 #This function is going to be dealing with the functionality of making a booking
 #option. This function will 
 def makeBookingOption(connection):
