@@ -175,8 +175,9 @@ def mainMenu(connection, userEmail, userPassword, airLineAgent):
     mainMenuOptions['2'] = "Make a booking."
     mainMenuOptions['3'] = "List and delete exiting bookings."
     mainMenuOptions['4'] = "Logout."
-    mainMenuOptions['5'] = "AIRLINE AGENTS ONLY: Record a flight departure."
-    mainMenuOptions['6'] = "AIRLINE AGENTS ONLY: Record a flight arrival."
+    if isAirlineAgent:
+        mainMenuOptions['5'] = "AIRLINE AGENTS ONLY: Record a flight departure."
+        mainMenuOptions['6'] = "AIRLINE AGENTS ONLY: Record a flight arrival."
     #Initialize the mainMenu where the user will be looping through until
     #We have a series of menu options to choose from.
     while mainMenu == True:
@@ -204,16 +205,16 @@ def mainMenu(connection, userEmail, userPassword, airLineAgent):
             logoutConfirm = logoutFunction(connection, userEmail, userPassword)
             return logoutConfirm
             
-        if mainMenuSelection == '5':
+        if mainMenuSelection == '5' and isAirlineAgent:
             recordFlightDeparture(airLineAgent, connection)
 
         
-        if mainMenuSelection == '6':
+        if mainMenuSelection == '6' and isAirlineAgent:
             recordFlightArrival(airLineAgent, connection)
     
 
 
-#All of the functions called upon by the main menu. (All 7 options!) 
+#All of the functions called upon by the main menu. (All 6 options!) 
 def searchForFlights(connection):
     # prompt user for source, destination and departure date
     curs = connection.cursor()
