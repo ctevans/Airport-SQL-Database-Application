@@ -195,10 +195,10 @@ def mainMenu(connection, userEmail, userPassword, airLineAgent):
     
             
         if mainMenuSelection == '2':
-            makeBookingOption(connection)
+            makeBookingOption(connection, userEmail)
     
         if mainMenuSelection == '3':
-            listAndDeleteExitingBookings(connection)
+            listAndDeleteExitingBookings(connection, userEmail)
     
             
         if mainMenuSelection == '4':
@@ -292,12 +292,12 @@ def searchForFlights(connection):
 
     curs.close()
 
-def listAndDeleteExitingBookings(connection):
+def listAndDeleteExitingBookings(connection,user_email):
     print("VIEW AND DELETE EXISTING BOOKINGS OPTION")
 
     #create cursor and get info from user
     curs = connection.cursor()
-    user_email = input("Please enter your email: ")
+    #user_email = input("Please enter your email: ")
     user_email = "'"+ user_email + "'"
 
     #get the required info from the required tables
@@ -312,7 +312,7 @@ def listAndDeleteExitingBookings(connection):
 
         #print top info bar
         if counter==0:
-            print("Row number".ljust(25)+"Ticket number".ljust(25)+"Passenger name".ljust(25)+"Department date".ljust(25)+"Price".ljust(25))
+            print("Row number".ljust(25)+"Ticket number".ljust(25)+"Passenger name".ljust(25)+"Departure date".ljust(25)+"Price".ljust(25))
         counter+=1
         
         #print the row number first
@@ -356,8 +356,10 @@ def listAndDeleteExitingBookings(connection):
         #commit it
         connection.commit()
 
-        #recreate the view with both new tables
+        #recreate the views with both new tables
         create_available_view(connection)
+        create_good_connections(connection)
+
         print("DELETE SUCCESSFULL!")
         
     #finally, close the cursor
@@ -365,11 +367,11 @@ def listAndDeleteExitingBookings(connection):
 
 #This function is going to be dealing with the functionality of making a booking
 #option. This function will 
-def makeBookingOption(connection):
+def makeBookingOption(connection,user_email):
     curs = connection.cursor()
     cursInsert = connection.cursor()
     print("MAKE A BOOKING OPTION")
-    user_email = input("Please enter your email: ")
+    #user_email = input("Please enter your email: ")
     user_email = "'"+user_email+"'"
     curs.execute("SELECT * from passengers where email ="+user_email)
     rows = curs.fetchall()
