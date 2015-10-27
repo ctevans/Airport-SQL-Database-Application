@@ -303,7 +303,7 @@ def searchForFlights(connection, user_email):
                 print("First flight")
                 makeBookingNoInput(connection,user_email,selectedRow[0],selectedRow[6].strftime('%d-%b-%Y'),selectedRow[1])
                 print("Second flight")
-                makeBookingNoInput(connection,user_email,selectedRow[2],(selectedRow[7]+selectedRow(8)).strftime('%d-%b-%Y'),selectedRow[3])
+                makeBookingNoInput(connection,user_email,selectedRow[2],(selectedRow[7]-selectedRow[8]+selectedRow[7]).strftime('%d-%b-%Y'),selectedRow[3])
         else:
             pass
 
@@ -318,7 +318,7 @@ def searchForFlights(connection, user_email):
         rows1 = curs.fetchall()
         
             
-        curs.execute("SELECT price, fare1, flightno2, fare2, src, dst, dep_date, arr_time, layover, seats from good_connections where src ="+"'" +flight_source+ "'"+" AND dst =" + "'" +flight_destination+ "'" + " and dep_date =" + "'" + flight_departure+ "'")
+        curs.execute("SELECT price, flightno1, fare1, flightno2, fare2, src, dst, dep_date, arr_time, layover, seats from good_connections where src ="+"'" +flight_source+ "'"+" AND dst =" + "'" +flight_destination+ "'" + " and dep_date =" + "'" + flight_departure+ "'")
 
         #store the other rows
         rows2 = curs.fetchall()
@@ -340,7 +340,7 @@ def searchForFlights(connection, user_email):
 
             else:
 
-                print("|Seat Price:",row[0],"|Initial Flight Number:",row[1],"|Initial Fare Type:",row[2],"|Connecting Flight Number:",row[3],"|Connecting Fare Type:",row[4],"|Source Airport:",row[5],"|Destination Airport:",row[6],"Departure Date:",row[7].strftime('%d-%b-%Y'), "|Arrival Time:", row[8].strftime('%d-%b-%Y'),"|Layover Time:",row[9],"|Seats Available:",row[10],"|Number of stops: 1|\n")
+                print("|Seat Price:",row[0],"|Initial Flight Number:",row[1],"|Initial Fare Type:",row[2],"|Connecting Flight Number:",row[3],"|Connecting Fare Type:",row[4],"|Source Airport:",row[5],"|Destination Airport:",row[6],"Departure Date:",row[7].strftime('%d-%b-%Y'), "|Arrival Time:", row[8].strftime('%d-%b-%Y'),"|Layover Time:",row[8],"|Seats Available:",row[10],"|Number of stops: 1|\n")
             
 
         if counter==0:
@@ -361,7 +361,7 @@ def searchForFlights(connection, user_email):
                 makeBookingNoInput(connection,user_email,selectedRow[1],selectedRow[6].strftime('%d-%b-%Y'),selectedRow[1])
 
                 print("Second flight:")
-                makeBookingNoInput(connection,user_email,selectedRow[2],(selectedRow[7]+selectedRow[8]).strftime('%d-%b-%Y'),selectedRow[3])
+                makeBookingNoInput(connection,user_email,selectedRow[2],(selectedRow[7]-selectedRow[8]+selectedRow[7]).strftime('%d-%b-%Y'),selectedRow[3])
 
         else:
             pass
