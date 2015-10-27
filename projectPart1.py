@@ -459,13 +459,36 @@ def logoutFunction(connection, userEmail, userPassword):
     
 #The arrival time of a flight may be modified from this function.
 def recordFlightArrival(airLineAgent, connection):
-    #Block non-airline agents from accessing this.
+    #Just in case, block non-airline agents from accessing this.
     if airLineAgent == False:
         print("Only airline agents may use this function!") 
         return
 
     #Now if they are actually a airline agent they proceed....
-    print("RECORD FLIGHT ARRIVAL")        
+    print("RECORD FLIGHT ARRIVAL")      
+    print("Please enter the flightnumber you want the value changed!")
+    print("EXAMPLE: AC154")
+    flightDepartureInputFNo = input("Enter flightnumber here: ") 
+    print("Please enter the EXPECTED departure date/time(NOT the actual one!)!")
+    print("Please follow the format: yyyy/mm/dd hh24:mi:ss") 
+    print("EXAMPLE: 01-OCT-15 09:00:00 for a 9:00am scheduled departure")
+    flightDepartureInputDep = input("Enter EXPECTED departure date here: ")
+    print("Please enter the ACTUAL ARRIVAL TIME HERE!")
+    print("Format (FOLLOW IT PLEASE!)")
+    print("yyyy/mm/dd hh24:mi:ss where y = year, m = month, d = day h = hour")
+    print(" mi = minutes and s = seconds") 
+    fullTimeStringArrival = input("Please enter here FORMAT PLEASE!")
+
+    curs = connection.cursor()
+    #Save to the database the new time, as in when they logged out.
+    curs.execute("UPDATE sch_flights set act_arr_time = " + "'" + 
+        fullTimeStringArrival + "'" + 
+        " where flightno = " + "'" + flightDepartureInputFNo + "'" +
+        " and dep_date = " +"'" + flightDepartureInputDep + "'")   
+
+    connection.commit() #save the database state permanently!!!!!!!1
+    print("Edited value for DEPARTURE put into database! Thank you! :)")
+  
   
 #The departure time of a flight may be modified from this function.  
 def recordFlightDeparture(airLineAgent, connection):
@@ -480,8 +503,9 @@ def recordFlightDeparture(airLineAgent, connection):
     print("EXAMPLE: AC154")
     flightDepartureInputFNo = input("Enter flightnumber here: ") 
     print("Please enter the EXPECTED departure date (NOT the actual one!)!")
-    print("EXAMPLE: 01-OCT-15")
-    flightDepartureInputDep = input("Enter expected departure date here: ")
+    print("Please follow the format: yyyy/mm/dd hh24:mi:ss") 
+    print("EXAMPLE: 01-OCT-15 09:00:00 for a 9:00am scheduled departure")
+    flightDepartureInputDep = input("Enter EXPECTED departure date here: ")
     print("Please enter the ACTUAL DEPARTURE TIME HERE!")
     print("Format (FOLLOIW IT PLEASE!!!!!!!!)")
     print("yyyy/mm/dd hh24:mi:ss where y = year, m = month, d = day h = hour")
@@ -494,10 +518,10 @@ def recordFlightDeparture(airLineAgent, connection):
         fullTimeStringDeparture + "'" + 
         " where flightno = " + "'" + flightDepartureInputFNo + "'" +
         " and dep_date = " +"'" + flightDepartureInputDep + "'")   
-    print("Edited value for DEPARTURE put into database! Thank you! :)")
 
     connection.commit() #save the database state permanently!!!!!!!1
- 
+    print("Edited value for DEPARTURE put into database! Thank you! :)")
+
 
     
 
