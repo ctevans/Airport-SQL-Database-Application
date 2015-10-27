@@ -412,6 +412,7 @@ def makeBookingOption(connection):
     check.close()
     curs.close()
 
+
 #This function is dealing exclusively with handling the logout of the user.
 def logoutFunction(connection, userEmail, userPassword):
     curs = connection.cursor()
