@@ -2,7 +2,7 @@ import sys
 import cx_Oracle # the package used for accessing Oracle in Python
 import getpass # the package for getting password from user without displaying it
 import random
-
+from operator import itemgetter
 
 # This function when evoked will create a view that is extremely useful
 #for the rest of the program and is utilized quite a bit.
@@ -280,10 +280,38 @@ def searchForFlights(connection, user_email):
         for row in rows:
             print("|Initial Flight Number:",row[0],"|Initial Fare Type:",row[1],"|Connecting Flight Number:",row[2],"|Connecting Fare Type:",row[3],"|Source Airport:",row[4],"|Destination Airport:",row[5],"|Departure Date:",row[6].strftime('%d-%b-%Y'), "|Arrival Time:", row[7].strftime('%d-%b-%Y'),"|Layover Time:",row[8],"|Seats Available:",row[9],"|Seat Price:",row[10],"|Number of stops: 1|\n")
     elif orderCheck == "PRI":
-        pass
+                #direct flight results                                                                                                                                                                                  
+        curs.execute("SELECT price, flightno, src, dst, dep_date, arr_time, seats"
+           " FROM AVAILABLE_FLIGHTS WHERE src =" + "'" +flight_source+ "'" +
+           " AND dst =" + "'" +flight_destination+ "'" + " and dep_date =" + "'" +
+           flight_departure+ "'" + " and seats > 1 ORDER BY price")
 
+        #store those rows
+        rows1 = curs.fetchall()
+        
+            
+        curs.execute("SELECT price, fare1, flightno2, fare2, src, dst, dep_date, arr_time, layover, seats from good_connections where src ="+"'" +flight_source+ "'"+" AND dst =" + "'" +flight_destination+ "'" + " and dep_date =" + "'" + flight_departure+ "'")
 
+        #store the other rows
+        rows2 = curs.fetchall()
 
+        #merge them because now we have all rows
+        allrows = rows1+rows2
+        
+        #sory them using the imported package (by price)
+        sortedrows = sorted(allrows, key=itemgetter(0))
+        
+        #print appropriate information depending on which table it came from 
+        for row in sortedrows:
+
+            if len(row)<8:
+                print("|Seat Price:",row[0],"|Flight Number:",row[1],"|Source Airport:",row[2],"|Destination Airport:",row[3],"|Departure Date:",row[4].strftime('%d-%b-%Y'),"|Arrival Time:",row[5].strftime('%d-%b-%Y') ,"|Seats Available:",row[6],"|number of stops: 0|\n")
+
+            else:
+
+                print("|Seat Price:",row[0],"|Initial Flight Number:",row[1],"|Initial Fare Type:",row[2],"|Connecting Flight Number:",row[3],"|Connecting Fare Type:",row[4],"|Source Airport:",row[5],"|Destination Airport:",row[6],"Departure Date:",row[7].strftime('%d-%b-%Y'), "|Arrival Time:", row[8].strftime('%d-%b-%Y'),"|Layover Time:",row[9],"|Seats Available:",row[10],"|Number of stops: 1|\n")
+
+    ##ask user if booking is wanted
     bookingCheck = input("Would you like to book a flight?(Y/N): ")
     if bookingCheck == "Y":
         makeBookingOption(connection, user_email)
@@ -344,7 +372,7 @@ def listAndDeleteExitingBookings(connection,user_email):
         curs.execute("SELECT * FROM bookings WHERE bookings.tno="+str(rows[int(users_row_number)-1][0]))
 
         rows = curs.fetchall()
-        print("Ticket number: "+str(rows[0][0])+"\nFlight number: "+rows[0][1]+"\nFare: "+rows[0][2]+"\nDeparture date: "+str(rows[0][3])+"\nSeat: "+rows[0][4])
+        print("Ticket number: "+str(rows[0][0])+"\nFlight number: "+rows[0][1]+"\nFare: "+rows[0][2]+"\nDeparture date: "+str(rows[0][3]).strftime('%d-%b-%Y')+"\nSeat: "+rows[0][4])
 
     #delete that booking
     if users_choice == '2':
@@ -371,15 +399,16 @@ def makeBookingOption(connection,user_email):
     curs = connection.cursor()
     cursInsert = connection.cursor()
     print("MAKE A BOOKING OPTION")
-    #user_email = input("Please enter your email: ")
+    user_name = input("Please enter your name: ")
+    user_name = "'"+user_name+"'"
     user_email = "'"+user_email+"'"
-    curs.execute("SELECT * from passengers where email ="+user_email)
+    curs.execute("SELECT * from passengers where name ="+user_name+" AND email = "+user_email)
     rows = curs.fetchall()
 
     if rows:
         pass
     else:
-        print("\nThe Email address you've entered was not part of our database")
+        print("\nThe name you've entered was not part of our database")
         print("Please give us your name and your country")
         user_name = input("Please enter your name:")
         user_name = "'"+user_name+"'"
@@ -396,7 +425,7 @@ def makeBookingOption(connection,user_email):
     user_flightno = "'"+user_flightno+"'"
     user_fare = input("Enter fare type:")
     user_fare = "'"+user_fare+"'"
-    user_departure = input("Enter departure date:")
+    user_departure = input("Enter departure date in DD-Mon-YY format:")
     user_departure = "'"+user_departure+"'"
     user_seat = input("Enter the seat number:")
     user_seat = "'"+user_seat+"'"
