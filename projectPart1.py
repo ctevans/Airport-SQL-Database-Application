@@ -58,7 +58,7 @@ def loginMenu(connection):
     #essentially forcing the user to make some meaningful decision.
     while loginMenu == True:
         print("LOGIN SCREEN:\nAre you registered yet or not?\n")
-        for eachOption in loginOptions:
+        for eachOption in sorted(loginOptions):
             print (eachOption, loginOptions[eachOption])
         #Obtain the user choice.
         #This is going to set booleans which will control flow access.
@@ -185,7 +185,7 @@ def mainMenu(connection, userEmail, userPassword, airLineAgent):
 
         print("Welcome to the main screen. We have various options here to choose from")
 
-        for eachOption in mainMenuOptions:
+        for eachOption in sorted(mainMenuOptions):
             print (eachOption, mainMenuOptions[eachOption])
     
         
