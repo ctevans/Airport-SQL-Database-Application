@@ -328,15 +328,28 @@ def makeBookingOption(connection):
     else:
         #INSERTING INTO BOOKINGS AND TICKETS ------------------------------------
         ticket_no = random.randint(1000,999999)
-        ticket_no = 1
         curs.execute("SELECT * from tickets where tno ="+str(ticket_no))
         rows = curs.fetchall()
-        for i in rows:
-            print(i)
-        curs.execute("SELECT * from available_flights where flightno = "
-            +user_flightno+" and fare = "+user_fare+" and dep_date = "
-            +user_departure)
-
+        if rows :
+            ticket_no = random.randint(1000,999999)
+        #curs.execute("SELECT * from available_flights where flightno = "
+            #+user_flightno+" and fare = "+user_fare+" and dep_date = "
+            #+user_departure)
+        curs.execute("SELECT name from passengers where email = "+user_email)
+        rows = curs.fetchall()
+        user_name = rows[0][0]
+        user_name = "'"+user_name+"'"
+        curs.execute("SELECT distinct price from available_flights where flightno ="+user_flightno+" AND fare ="+user_fare)
+        rows = curs.fetchall()
+        user_price = rows[0][0]
+        cursInsertTicket = connection.cursor()
+        cursInsertTicket.execute("INSERT INTO tickets values "+"("+str(ticket_no)+","+user_name+","+user_email+","+str(user_price)+")")
+        connection.commit()
+        cursInsertBooking = connection.cursor()
+        #print("INSERT INTO BOOKINGS values "+"("+str(ticket_no)+","+user_flightno+","+user_fare+","+user_departure+","+user_seat+")")
+        cursInsertBooking.execute("INSERT INTO BOOKINGS values "+"("+str(ticket_no)+","+user_flightno+","+user_fare+","+user_departure+","+user_seat+")")
+        connection.commit()
+        cursInsertBooking.close()
         #END OF INSTERTION ------------------------------------------------------
     check.close()
     curs.close()
