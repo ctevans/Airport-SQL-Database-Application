@@ -273,11 +273,11 @@ def searchForFlights(connection):
             print("|Flight Number:",row[0],"|Source Airport:",row[1],
                 "|Destination Airport:",row[2],"|Departure Date:",
                 row[3].strftime('%d-%b-%Y'),"|Arrival Time:",row[4].strftime('%d-%b-%Y') ,"|Seats Available:",row[5],
-                "|Seat Price:",row[6],"|number of stops: 0")
-        curs.execute("SELECT flightno1, fare1, flightno2, fare2, src, dst, dep_date, layover,seats, price from good_connections where src ="+"'" +flight_source+ "'"+" AND dst =" + "'" +flight_destination+ "'" + " and dep_date =" + "'" + flight_departure+ "'")
+                "|Seat Price:",row[6],"|number of stops: 0|\n")
+        curs.execute("SELECT flightno1, fare1, flightno2, fare2, src, dst, dep_date, arr_time, layover,seats, price from good_connections where src ="+"'" +flight_source+ "'"+" AND dst =" + "'" +flight_destination+ "'" + " and dep_date =" + "'" + flight_departure+ "'")
         rows = curs.fetchall()
         for row in rows:
-            print("|Initial Flight Number:",row[0],"|Initial Fare Type:",row[1],"|Connecting Flight Number:",row[2],"|Connecting Fare Type:",row[3],"|Source Airport:",row[4],"|Destination Airport:",row[5],"|Departure Date:",row[6],"|Layover Time:",row[7],"|Seats Available:",row[8],"|Seat Price:",row[9])
+            print("|Initial Flight Number:",row[0],"|Initial Fare Type:",row[1],"|Connecting Flight Number:",row[2],"|Connecting Fare Type:",row[3],"|Source Airport:",row[4],"|Destination Airport:",row[5],"|Departure Date:",row[6].strftime('%d-%b-%Y'), "|Arrival Time:", row[7].strftime('%d-%b-%Y'),"|Layover Time:",row[8],"|Seats Available:",row[9],"|Seat Price:",row[10],"|Number of stops: 1|\n")
     elif orderCheck == "PRI":
         pass
 
