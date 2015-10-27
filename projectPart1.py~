@@ -388,6 +388,8 @@ def recordFlightDeparture(airLineAgent, connection):
         " where flightno = " + "'" + flightDepartureInputFNo + "'" +
         " and dep_date = " +"'" + flightDepartureInputDep + "'")   
     print("Edited value for DEPARTURE put into database! Thank you! :)")
+
+    connection.commit() #save the database state permanently!!!!!!!1
  
 
     
