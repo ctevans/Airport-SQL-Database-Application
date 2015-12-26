@@ -35,12 +35,21 @@ After a successful login. This is going to be the part where the user is granted
 Part 7 – The various unique functions:
 This part is dedicated to all of the various functions that the user can select. From the main menu they selected an option and whatever option is selected, they will have the same similar effect. The user in any one of these options will be prompted for various series’ of information that they must supply by making a choice from a list of options or entering in information to the console and then submitting the information by hitting enter. Upon completion the system will return the desired information and then send the user back to the main menu. 
 Please note: The Record a flight departure and the record a flight arrival are for airline agents ONLY. Users without the airline agent privileges will be denied access to these functions and told so upon attempt. 
-b.) Detailed Design
+
+
+## Detailed Design
+
 Python 3.4 was used, with the intent to make the application text based. So whenever something was desired to be printed on the screen basic print statements were used. Whenever we wanted to gain user input we used the “input” python command, aside from the passwords because we used the more defensive getpass.getpass() command. 
+
 When commanding to the databases we created a connection to gwynne.cs.ualberta.ca and then passed this connection around the program. When we actually wanted to perform some sort of action on the database we would create a cursor with it using the connection.cursor() command and evoke SQL commands using it. 
+
 Please refer to the functional flowchart for the way that the functions interact in this program. It will help make this make more sense.
+
 THE main function, this will initialize a host of variables such as the connection to the database and useful Booleans that will manage if the user exits the program, and if we run into a cx_Oracle error we have a block dedicated purely towards creating proper output from the terminal screen. This function evokes other functions (big ones) such as the loginMenu and then the mainMenu functions. It will shuffle essential variables like username and userpassword around through these functions as well. But the bulk of the responsibility is transferred to other functions.
+
 loginMenu function is going to be dedicated purely towards the login screen (trapping the user in a while loop) passed the connection this will display the options the user has to login, register or exit and then through a series of Booleans dictated by the user input will then cascade down to the desired functions. Throughout the login, registration or exit process the user has a series of prompts that then interact with the database to check if the user is valid or not or if the user is actually trying to register an account that does not exist. 
+
 Upon successful completion this function then throws the username, password and a successful or not flag to the main function. 
+
 mainMenu: This function is going to present the user with a series of options (trapping them in yet another while loop) however this mainMenu function acts moreso as if it were a massive launchpad to other functions that handle their respective functionalities. 
 
