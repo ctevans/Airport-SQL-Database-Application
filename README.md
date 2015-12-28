@@ -1,7 +1,7 @@
 # Airport-SQL-Database-Application
 
 Languages: Python 3, SQL
-
+ 
 ##Goals, Relevance, Purpose:
 
 Using Python 3 and SQL the goal of this project was to create an application that can interact with an SQL database and allow a user to perform various actions with it, actions include:
